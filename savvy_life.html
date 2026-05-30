@@ -25,7 +25,6 @@
 </head>
 <body class="min-h-screen pb-12 antialiased">
 
-    <!-- ヘッダーセクション -->
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-4 py-4">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -36,7 +35,7 @@
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                         Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite</span>
                     </h1>
-                    <p class="text-xs text-slate-400">個人事業 総合エビデンス管理 (写真保存対応版)</p>
+                    <p class="text-xs text-slate-400">個人事業 総合エビデンス管理 (機能強化版)</p>
                 </div>
             </div>
             
@@ -66,7 +65,6 @@
 
     <main class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
 
-        <!-- ==================== TAB 1: LEDGER (収支管理) ==================== -->
         <div id="sect-ledger" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="glass-panel p-5 rounded-2xl">
@@ -87,8 +85,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- 収支フォーム -->
+            <div class="grid grid-cols-1 grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="glass-panel p-6 rounded-2xl h-fit space-y-4" id="ledger-form-container">
                     <h2 class="text-base font-bold text-white flex items-center gap-2 border-b border-slate-700 pb-3" id="ledger-form-title">
                         💰 収支登録
@@ -120,7 +117,6 @@
                             <input type="text" id="form-memo" placeholder="株式会社〇〇、機材購入、食事代など" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
                         
-                        <!-- 領収書アップロード -->
                         <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/50">
                             <label class="block text-xs text-slate-400 font-semibold mb-2">領収書・レシート画像 (任意)</label>
                             <div class="flex items-center gap-3">
@@ -150,13 +146,18 @@
                 <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-700 pb-4 mb-4">
                         <h2 class="text-base font-bold text-white">🗒️ 取引履歴・仕訳</h2>
-                        <select id="filter-ledger-month" onchange="renderAll()" class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300">
-                            <option value="all">すべての月</option>
-                            <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
-                            <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
-                            <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
-                            <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-                        </select>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <select id="filter-ledger-month" onchange="renderAll()" class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300">
+                                <option value="all">すべての月</option>
+                                <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+                                <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+                                <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+                                <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                            </select>
+                            <button onclick="exportMonthlyReport()" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                📊 月別レポート出力
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-300">
@@ -178,10 +179,8 @@
             </div>
         </div>
 
-        <!-- ==================== TAB 2: TIMECARD (業務ログ) ==================== -->
         <div id="sect-timecard" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- フォーム -->
                 <div class="glass-panel p-6 rounded-2xl h-fit space-y-4" id="timecard-form-container">
                     <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3" id="timecard-form-title">⏱️ 勤務ログ登録</h2>
                     <form id="timecard-form" onsubmit="saveTimeRecord(event)" class="space-y-4">
@@ -215,13 +214,26 @@
                             <input type="text" id="time-memo" placeholder="経理事務など" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
                         
+                        <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/50 grid grid-cols-2 gap-2">
+                            <div class="col-span-2">
+                                <span class="block text-[11px] text-amber-400 font-bold mb-1">👥 打ち合わせ情報 (ある場合のみ)</span>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-semibold mb-1">参加者・人数</label>
+                                <input type="text" id="time-attendees" placeholder="例：〇〇社3名" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-white text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-semibold mb-1">打合せ時間 (分)</label>
+                                <input type="number" id="time-meeting-duration" placeholder="例：60" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-white text-xs">
+                            </div>
+                        </div>
+                        
                         <div class="flex gap-2">
                             <button type="button" id="timecard-cancel-btn" onclick="cancelEdit('timecard')" class="hidden w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl transition text-sm">キャンセル</button>
                             <button type="submit" id="timecard-submit-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">記録を保存</button>
                         </div>
                     </form>
                 </div>
-                <!-- リスト -->
                 <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
                     <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3 mb-4">🗓️ 業務実施日誌</h2>
                     <div class="overflow-x-auto">
@@ -230,7 +242,7 @@
                                 <tr>
                                     <th class="px-4 py-3">日付・氏名</th>
                                     <th class="px-4 py-3">時間 (実働)</th>
-                                    <th class="px-4 py-3">業務内容</th>
+                                    <th class="px-4 py-3">業務内容・打ち合わせ</th>
                                     <th class="px-4 py-3 text-center">操作</th>
                                 </tr>
                             </thead>
@@ -241,10 +253,8 @@
             </div>
         </div>
 
-        <!-- ==================== TAB 3: VEHICLE (運行記録) ==================== -->
         <div id="sect-vehicle" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- フォーム -->
                 <div class="glass-panel p-6 rounded-2xl h-fit space-y-4" id="vehicle-form-container">
                     <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3" id="vehicle-form-title">🚗 運行記録登録</h2>
                     <form id="vehicle-form" onsubmit="saveVehicleLog(event)" class="space-y-4">
@@ -274,7 +284,6 @@
                             <input type="text" id="car-destination" placeholder="〇〇現場、スーパーで買い物など" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
 
-                        <!-- メーター・レシート画像アップロード -->
                         <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/50">
                             <label class="block text-xs text-slate-400 font-semibold mb-2">メーター等の写真 (任意)</label>
                             <div class="flex items-center gap-3">
@@ -296,9 +305,8 @@
                         </div>
                     </form>
                 </div>
-                <!-- リスト -->
                 <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
-                    <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3 mb-4">📋 運行記録簿</h2>
+                    <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3 mb-4">📋 運行運行記録簿</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-300">
                             <thead class="text-xs text-slate-400 uppercase bg-slate-900/60">
@@ -320,7 +328,6 @@
 
     </main>
 
-    <!-- 画像拡大モーダル -->
     <div id="image-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4" onclick="closeImageModal()">
         <div class="relative max-w-3xl w-full h-auto max-h-screen flex items-center justify-center p-4">
             <img id="modal-image" src="" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain">
@@ -328,7 +335,6 @@
         </div>
     </div>
 
-    <!-- カスタム確認ダイアログ -->
     <div id="confirm-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
         <div class="glass-panel max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-700">
             <h3 class="text-sm font-bold text-white">⚠️ 確認</h3>
@@ -340,11 +346,9 @@
         </div>
     </div>
 
-    <!-- トースト通知 -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-[70] space-y-2"></div>
 
     <script>
-        // 青色申告決算書に準拠した豊富な勘定科目
         const categories = {
             income: [ 
                 { id: "rev_video", name: "売上：映像・クリエイティブ" }, 
@@ -380,12 +384,9 @@
 
         let state = { transactions: [], timecard: [], vehicleLogs: [] };
         let editingId = { ledger: null, timecard: null, vehicle: null };
-        
-        // モジュールごとの画像データ（Base64）保持
         let currentImages = { ledger: null, vehicle: null };
 
         window.onload = function() {
-            // 現在の日付を取得してデフォルトセット
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -396,7 +397,6 @@
             document.getElementById('time-date').value = formattedDate;
             document.getElementById('car-date').value = formattedDate;
             
-            // 現在の月にフィルターを合わせる
             const filterEl = document.getElementById('filter-ledger-month');
             if(filterEl.querySelector(`option[value="${today.getMonth() + 1}"]`)){
                 filterEl.value = today.getMonth() + 1;
@@ -406,13 +406,7 @@
             if (savedState) {
                 state = JSON.parse(savedState);
             } else {
-                // 古いバージョンからの移行または新規
-                const oldState = localStorage.getItem('savvy_suite_state_v2') || localStorage.getItem('savvy_suite_state_v1');
-                if(oldState) {
-                    state = JSON.parse(oldState);
-                } else {
-                    loadDemoData(formattedDate);
-                }
+                loadDemoData(formattedDate);
             }
             updateCategories();
             renderAll();
@@ -439,7 +433,6 @@
             });
         }
 
-        // ================= 画像処理 (汎用: Ledger & Vehicle対応) =================
         function handleImageUpload(event, module) {
             const file = event.target.files[0];
             if (!file) return;
@@ -465,7 +458,6 @@
                     ctx.drawImage(img, 0, 0, width, height);
 
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    
                     currentImages[module] = dataUrl;
                     document.getElementById(`${module}-preview`).src = dataUrl;
                     document.getElementById(`${module}-preview-container`).classList.remove('hidden');
@@ -491,7 +483,6 @@
             document.getElementById('image-modal').classList.add('hidden');
         }
 
-        // ================= 編集モード管理 =================
         function setEditMode(module, isEdit, title = "") {
             const btnSubmit = document.getElementById(`${module}-submit-btn`);
             const btnCancel = document.getElementById(`${module}-cancel-btn`);
@@ -549,11 +540,7 @@
 
             if (editingId.ledger) {
                 const idx = state.transactions.findIndex(t => t.id === editingId.ledger);
-                if (idx !== -1) {
-                    // 古いプロパティ名が残っていれば消す
-                    delete state.transactions[idx].receiptImage;
-                    state.transactions[idx] = txData;
-                }
+                if (idx !== -1) state.transactions[idx] = txData;
                 showToast("収支を更新しました");
             } else {
                 state.transactions.unshift(txData);
@@ -577,7 +564,6 @@
             document.getElementById('form-amount').value = tx.amount;
             document.getElementById('form-memo').value = tx.memo;
 
-            // 後方互換性(receiptImage)もサポート
             const imgData = tx.image || tx.receiptImage;
             if (imgData) {
                 currentImages.ledger = imgData;
@@ -586,10 +572,8 @@
             } else {
                 clearImage('ledger');
             }
-            
             setEditMode('ledger', true, '収支を編集');
         }
-
 
         // ================= 勤務 (TIMECARD) =================
         function saveTimeRecord(e) {
@@ -601,7 +585,9 @@
                 start: document.getElementById('time-start').value,
                 end: document.getElementById('time-end').value,
                 breakMin: parseInt(document.getElementById('time-break').value),
-                memo: document.getElementById('time-memo').value
+                memo: document.getElementById('time-memo').value,
+                attendees: document.getElementById('time-attendees').value || "-",
+                meetingDuration: document.getElementById('time-meeting-duration').value || "0"
             };
             
             const [sh, sm] = data.start.split(':').map(Number);
@@ -633,9 +619,30 @@
             document.getElementById('time-end').value = t.end;
             document.getElementById('time-break').value = t.breakMin;
             document.getElementById('time-memo').value = t.memo;
+            document.getElementById('time-attendees').value = t.attendees === "-" ? "" : t.attendees;
+            document.getElementById('time-meeting-duration').value = t.meetingDuration === "0" ? "" : t.meetingDuration;
             setEditMode('timecard', true, '勤務ログを編集');
         }
 
+        // 【新機能】Googleカレンダーに簡易連携するインテント機能
+        function addToGoogleCalendar(id) {
+            const t = state.timecard.find(x => x.id === id);
+            if (!t) return;
+            
+            const baseDate = t.date.replace(/-/g, ''); // YYYYMMDD
+            const startTime = t.start.replace(':', '') + '00'; // HHMMSS
+            const endTime = t.end.replace(':', '') + '00'; // HHMMSS
+            
+            const title = encodeURIComponent(`【業務ログ】${t.member}：${t.memo}`);
+            let details = `■業務メモ: ${t.memo}\n■実働時間: ${t.hours}時間 (休憩 ${t.breakMin}分)`;
+            if (t.meetingDuration && t.meetingDuration !== "0") {
+                details += `\n■打ち合わせ参加者: ${t.attendees}\n■打ち合わせ時間: ${t.meetingDuration}分`;
+            }
+            const encodedDetails = encodeURIComponent(details);
+            
+            const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${baseDate}T${startTime}/${baseDate}T${endTime}&details=${encodedDetails}&sf=true&output=xml`;
+            window.open(url, '_blank');
+        }
 
         // ================= 車両 (VEHICLE) =================
         function saveVehicleLog(e) {
@@ -693,12 +700,10 @@
             } else {
                 clearImage('vehicle');
             }
-
             setEditMode('vehicle', true, '運行記録を編集');
         }
 
-
-        // ================= 削除 & UI =================
+        // ================= 削除 & UI描画 =================
         function askDelete(type, id) {
             document.getElementById('confirm-message').textContent = "この記録を完全に削除してもよろしいですか？";
             document.getElementById('confirm-modal').classList.remove('hidden');
@@ -732,7 +737,6 @@
                 if (t.type === "unpaid-settlement") unpaid -= t.amount;
 
                 const b = t.type === 'income' ? 'text-emerald-400' : 'text-rose-400';
-                
                 const imgData = t.image || t.receiptImage;
                 let imgHtml = '-';
                 if (imgData) {
@@ -766,12 +770,21 @@
             const tTbody = document.getElementById('timecard-rows');
             tTbody.innerHTML = '';
             state.timecard.forEach(t => {
+                let meetingHtml = '';
+                if(t.meetingDuration && t.meetingDuration !== "0") {
+                    meetingHtml = `<span class="block text-[10px] text-amber-400 mt-0.5 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded w-fit">👥 打ち合わせ: ${t.attendees} (${t.meetingDuration}分)</span>`;
+                }
+
                 tTbody.innerHTML += `
                     <tr class="border-b border-slate-800 hover:bg-slate-800/40 text-xs">
                         <td class="px-4 py-3"><span class="text-slate-400 block">${t.date}</span><span class="font-bold text-white">${t.member}</span></td>
                         <td class="px-4 py-3"><span class="block text-slate-400">${t.start}-${t.end}</span><span class="text-amber-400 font-bold">${t.hours}h</span></td>
-                        <td class="px-4 py-3 text-slate-300 truncate max-w-[120px]">${t.memo}</td>
-                        <td class="px-4 py-3 flex gap-1 justify-center">
+                        <td class="px-4 py-3 text-slate-300">
+                            <span class="block">${t.memo}</span>
+                            ${meetingHtml}
+                        </td>
+                        <td class="px-4 py-3 flex gap-1 justify-center items-center">
+                            <button onclick="addToGoogleCalendar('${t.id}')" class="bg-slate-800 hover:bg-blue-600 border border-slate-700 text-white px-2 py-1 rounded transition" title="Googleカレンダーに送る">📅</button>
                             <button onclick="editTimeRecord('${t.id}')" class="bg-slate-700 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">編集</button>
                             <button onclick="askDelete('timecard','${t.id}')" class="bg-slate-800 hover:bg-rose-600 text-slate-300 px-2 py-1 rounded transition">削除</button>
                         </td>
@@ -802,11 +815,136 @@
             });
         }
 
+        // 【新機能】月ごとのまとめ・添付写真の一括PDF・印刷用アウトプット機能
+        function exportMonthlyReport() {
+            const selectedMonth = document.getElementById('filter-ledger-month').value;
+            if (selectedMonth === 'all') {
+                alert('月別レポートを出力するには、右側のドロップダウンで特定の月（1月〜12月）を選択してください。');
+                return;
+            }
+            
+            const currentYear = new Date().getFullYear();
+            const filteredTx = state.transactions.filter(t => new Date(t.date).getMonth() + 1 == selectedMonth);
+            const filteredTime = state.timecard.filter(t => new Date(t.date).getMonth() + 1 == selectedMonth);
+            const filteredVehicle = state.vehicleLogs.filter(v => new Date(v.date).getMonth() + 1 == selectedMonth);
+            
+            let reportWindow = window.open('', '_blank');
+            let txRows = '';
+            let totalRev = 0, totalExp = 0, unpaid = 0;
+            let imagesHtml = '<h2>📸 添付エビデンス（領収書・メーター写真等）一覧</h2><div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">';
+            let hasImages = false;
+
+            filteredTx.forEach(t => {
+                if (t.type === "income") totalRev += t.amount;
+                else if (t.type === "expense" || t.type === "unpaid-accrual") totalExp += t.amount;
+                if (t.type === "unpaid-accrual") unpaid += t.amount;
+                if (t.type === "unpaid-settlement") unpaid -= t.amount;
+
+                const imgData = t.image || t.receiptImage;
+                let imgStatus = '-';
+                if (imgData) {
+                    hasImages = true;
+                    imgStatus = 'あり (巻末に添付)';
+                    imagesHtml += `
+                        <div style="border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; text-align: center; background: #f8fafc;">
+                            <p style="font-size: 11px; margin: 0 0 6px 0; font-weight: bold; color:#475569;">【収支】${t.date} / ${t.categoryName} (¥${t.amount.toLocaleString()})</p>
+                            <img src="${imgData}" style="max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 4px;" />
+                        </div>`;
+                }
+
+                txRows += `<tr><td>${t.date}</td><td>${t.type === 'income' ? '収入' : '経費'}</td><td><b>${t.categoryName}</b><br><small style="color:#64748b">${t.memo}</small></td><td style="text-align: right; font-weight: bold;">¥${t.amount.toLocaleString()}</td><td style="text-align: center;">${imgStatus}</td></tr>`;
+            });
+
+            let timeRows = '';
+            filteredTime.forEach(t => {
+                timeRows += `<tr><td>${t.date}</td><td><b>${t.member}</b></td><td>${t.start} 〜 ${t.end} (${t.hours}h)</td><td>${t.memo}${ (t.meetingDuration && t.meetingDuration !== "0") ? `<br><small style="color:#b45309; font-weight:bold;">👥 打ち合わせ: ${t.attendees} (${t.meetingDuration}分)</small>` : '' }</td></tr>`;
+            });
+
+            let vehicleRows = '';
+            filteredVehicle.forEach(v => {
+                const imgData = v.image;
+                let imgStatus = '-';
+                if (imgData) {
+                    hasImages = true;
+                    imgStatus = 'あり (巻末に添付)';
+                    imagesHtml += `
+                        <div style="border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; text-align: center; background: #f8fafc;">
+                            <p style="font-size: 11px; margin: 0 0 6px 0; font-weight: bold; color:#475569;">【運行】${v.date} / ${v.destination} (${v.distance}km)</p>
+                            <img src="${imgData}" style="max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 4px;" />
+                        </div>`;
+                }
+                vehicleRows += `<tr><td>${v.date}</td><td>${v.purposeType === 'business' ? '事業用' : '私用'}</td><td>${v.startOdo} → ${v.endOdo} (<b>${v.distance}km</b>)</td><td>${v.destination}</td><td style="text-align: center;">${imgStatus}</td></tr>`;
+            });
+
+            imagesHtml += '</div>';
+            if (!hasImages) imagesHtml = '<h2>📸 添付エビデンス一覧</h2><p style="color: #64748b; font-size:13px;">この月に添付された画像はありません。</p>';
+
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${currentYear}年${selectedMonth}月度 事業経費・活動報告書</title>
+                    <style>
+                        body { font-family: system-ui, sans-serif; color: #1e293b; line-height: 1.5; padding: 30px; background:#fff; }
+                        h1 { border-b: 3px solid #0f172a; padding-bottom: 8px; font-size: 22px; margin-top:0; }
+                        h2 { font-size: 15px; margin-top: 35px; border-left: 5px solid #d97706; padding-left: 10px; color:#0f172a; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+                        th { background-color: #f1f5f9; color:#334155; }
+                        .summary-box { display: flex; gap: 15px; margin-top: 20px; }
+                        .card { border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; flex: 1; background: #f8fafc; }
+                        .card p { margin: 0; font-size: 11px; color: #64748b; font-weight:bold; }
+                        .card h3 { margin: 4px 0 0 0; font-size: 18px; color:#0f172a; }
+                        @media print {
+                            button { display: none; }
+                            body { padding: 0; }
+                            .page-break { page-break-before: always; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div style="text-align: right; margin-bottom:15px;"><button onclick="window.print()" style="padding: 8px 16px; background: #d97706; color:white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size:12px;">🖨️ PDF保存・印刷する</button></div>
+                    <h1>Savvy 事業活動明細報告書 (${currentYear}年 ${selectedMonth}月度)</h1>
+                    
+                    <div class="summary-box">
+                        <div class="card"><p>総売上</p><h3>¥${totalRev.toLocaleString()}</h3></div>
+                        <div class="card"><p>総必要経費</p><h3>¥${totalExp.toLocaleString()}</h3></div>
+                        <div class="card"><p>差引事業所得</p><h3>¥${(totalRev - totalExp).toLocaleString()}</h3></div>
+                        <div class="card"><p>専従者未払給与残高</p><h3>¥${unpaid.toLocaleString()}</h3></div>
+                    </div>
+
+                    <h2>💰 収支・仕訳明細一覧</h2>
+                    <table>
+                        <thead><tr><th>日付</th><th>区分</th><th>勘定科目・メモ</th><th>金額</th><th>画像</th></tr></thead>
+                        <tbody>${txRows || '<tr><td colspan="5" style="text-align:center; color:#64748b;">当月の収支データはありません。</td></tr>'}</tbody>
+                    </table>
+
+                    <h2>⏱️ 業務日誌・打ち合わせログ</h2>
+                    <table>
+                        <thead><tr><th>日付</th><th>氏名</th><th>時間</th><th>業務内容・打ち合わせ詳細</th></tr></thead>
+                        <tbody>${timeRows || '<tr><td colspan="4" style="text-align:center; color:#64748b;">当月の業務ログはありません。</td></tr>'}</tbody>
+                    </table>
+
+                    <h2>🚗 運行記録簿</h2>
+                    <table>
+                        <thead><tr><th>日付</th><th>区分</th><th>メーター距離</th><th>目的地・用途</th><th>画像</th></tr></thead>
+                        <tbody>${vehicleRows || '<tr><td colspan="5" style="text-align:center; color:#64748b;">当月の運行記録はありません。</td></tr>'}</tbody>
+                    </table>
+
+                    <div class="page-break"></div>
+                    ${imagesHtml}
+                </body>
+                </html>
+            `;
+            reportWindow.document.write(htmlContent);
+            reportWindow.document.close();
+        }
+
         function saveState() { localStorage.setItem('savvy_suite_state_v3', JSON.stringify(state)); }
-        
         function loadDemoData(date) { 
             state.transactions = [
-                { id: "tx_demo1", date: date, type: "expense", categoryId: "exp_entertain", categoryName: "接待交際費 (飲食・贈答品等)", amount: 12500, memo: "〇〇社長と情報交換会食" }
+                { id: "tx_demo1", date: date, type: "expense", categoryId: "exp_entertain", categoryName: "接待交際費 (飲食・贈答品等)", amount: 12500, memo: "ビジネス情報交換会食" }
             ];
             saveState(); 
         }
