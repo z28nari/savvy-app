@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Savvy Life Suite v5 - 総合事業管理システム</title>
+    <title>Savvy Life Suite v6 - 総合事業管理システム</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font & Noto Sans JP -->
@@ -47,7 +47,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v5</span>
+                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v6</span>
                     </h1>
                     <p class="text-xs text-slate-400">個人事業 総合エビデンス（収支・出勤簿・運行記録）管理ツール</p>
                 </div>
@@ -232,7 +232,6 @@
                             <input type="text" id="form-memo" placeholder="動画編集、機材購入、ミキ様給料など" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
                         
-                        <!-- 編集時の更新／キャンセルの切り替えエリア -->
                         <div id="ledger-btn-group" class="space-y-2">
                             <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">
                                 収支を保存する
@@ -272,7 +271,7 @@
                     </div>
                 </div>
                 
-                <!-- スマホの縦潰れ対策：横スクロールコンテナ -->
+                <!-- 横スクロールコンテナ -->
                 <div class="overflow-x-auto w-full border border-slate-800 rounded-xl bg-slate-950/40">
                     <table class="w-full text-left text-sm text-slate-300 min-w-[950px] table-fixed">
                         <thead class="text-xs text-slate-400 uppercase bg-slate-900/80">
@@ -334,15 +333,15 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs text-slate-400 font-semibold mb-1">開始時間（19:00〜23:00）</label>
+                                <label class="block text-xs text-slate-400 font-semibold mb-1">開始時間（24時間対応）</label>
                                 <select id="time-start" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
-                                    <!-- 動的に生成されます -->
+                                    <!-- JSで動的に24時間分が生成されます -->
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs text-slate-400 font-semibold mb-1">終了時間（19:00〜23:00）</label>
+                                <label class="block text-xs text-slate-400 font-semibold mb-1">終了時間（24時間対応）</label>
                                 <select id="time-end" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
-                                    <!-- 動的に生成されます -->
+                                    <!-- JSで動的に24時間分が生成されます -->
                                 </select>
                             </div>
                         </div>
@@ -389,7 +388,7 @@
                         </div>
                     </div>
                     
-                    <!-- スマホの縦潰れ対策：横スクロールコンテナ -->
+                    <!-- 横スクロールコンテナ -->
                     <div class="overflow-x-auto w-full border border-slate-800 rounded-xl bg-slate-950/40">
                         <table class="w-full text-left text-sm text-slate-300 min-w-[950px] table-fixed">
                             <thead class="text-xs text-slate-400 uppercase bg-slate-900/80">
@@ -424,7 +423,7 @@
                 <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500">
                     <p class="text-xs text-slate-400 font-medium">今月の総走行距離</p>
                     <p id="stat-car-total-km" class="text-2xl font-bold mt-2 text-white">0 km</p>
-                    <div class="mt-2 text-xs text-slate-400">メーター記録 of 総距離</div>
+                    <div class="mt-2 text-xs text-slate-400">メーター記録の総距離</div>
                 </div>
                 <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500">
                     <p class="text-xs text-slate-400 font-medium">うち 事業目的の走行</p>
@@ -491,7 +490,7 @@
                         <h2 class="text-base font-bold text-white">📋 車両運行記録簿 (家事按分エビデンス)</h2>
                     </div>
 
-                    <!-- スマホの縦潰れ対策：横スクロールコンテナ -->
+                    <!-- 横スクロールコンテナ -->
                     <div class="overflow-x-auto w-full border border-slate-800 rounded-xl bg-slate-950/40">
                         <table class="w-full text-left text-sm text-slate-300 min-w-[950px] table-fixed">
                             <thead class="text-xs text-slate-400 uppercase bg-slate-900/80">
@@ -624,17 +623,20 @@
             const defaultDate = "2026-05-01";
             setDateAll(defaultDate);
 
-            // ローカルストレージからのロード (古いキャッシュ干渉を防ぐため新規にキーを設定)
-            const savedState = localStorage.getItem('savvy_suite_state_v5');
+            // ローカルストレージからのロード (古いキャッシュ干渉を防ぐためキーを新規新設)
+            const savedState = localStorage.getItem('savvy_suite_state_v6');
             if (savedState) {
                 state = JSON.parse(savedState);
             } else {
-                // 過去データの段階的マイグレーション（ユーザーのデータを失わないための配慮）
+                // v5、v4、v3、v1などの過去キーからのオートインポート
+                const v5State = localStorage.getItem('savvy_suite_state_v5');
                 const v4State = localStorage.getItem('savvy_suite_state_v4');
                 const v3State = localStorage.getItem('savvy_suite_state_v3');
-                const v2State = localStorage.getItem('savvy_suite_state_v1'); // v1キー
+                const v2State = localStorage.getItem('savvy_suite_state_v1');
                 
-                if (v4State) {
+                if (v5State) {
+                    state = JSON.parse(v5State);
+                } else if (v4State) {
                     state = JSON.parse(v4State);
                 } else if (v3State) {
                     state = JSON.parse(v3State);
@@ -646,7 +648,7 @@
                 saveState();
             }
 
-            buildTimeDropdowns(); // 19:00〜23:00のドロップダウン生成
+            buildTimeDropdowns(); // 24時間ドロップダウンの構築（初期値 19:00〜23:00）
             updateCategories();
             renderAll();
         };
@@ -660,7 +662,8 @@
             document.getElementById('modal-payment-date').value = dateString;
         }
 
-        // 19:00 〜 23:00 の時間選択ドロップダウン生成
+        // 💡 24時間すべての時間を選択可能にする処理
+        // ただし初期セット（デフォルト）は19:00〜23:00とする
         function buildTimeDropdowns() {
             const startSelect = document.getElementById('time-start');
             const endSelect = document.getElementById('time-end');
@@ -668,22 +671,25 @@
             startSelect.innerHTML = '';
             endSelect.innerHTML = '';
 
-            for (let hour = 19; hour <= 23; hour++) {
+            // 00:00 から 23:30 までの24時間分（30分刻み、計48段階）の選択肢を作成
+            for (let hour = 0; hour < 24; hour++) {
                 for (let min of ['00', '30']) {
-                    if (hour === 23 && min === '30') break; // 23:00がラスト
-                    
                     const timeStr = `${String(hour).padStart(2, '0')}:${min}`;
                     
+                    // 開始時間の選択肢追加
                     const optStart = document.createElement('option');
                     optStart.value = timeStr;
                     optStart.textContent = timeStr;
-                    if (timeStr === '19:00') optStart.selected = true; // デフォルト：19:00
+                    // デフォルトは 19:00
+                    if (timeStr === '19:00') optStart.selected = true; 
                     startSelect.appendChild(optStart);
 
+                    // 終了時間の選択肢追加
                     const optEnd = document.createElement('option');
                     optEnd.value = timeStr;
                     optEnd.textContent = timeStr;
-                    if (timeStr === '23:00') optEnd.selected = true; // デフォルト：23:00
+                    // デフォルトは 23:00
+                    if (timeStr === '23:00') optEnd.selected = true; 
                     endSelect.appendChild(optEnd);
                 }
             }
@@ -844,7 +850,7 @@
             const categoryName = getCategoryName(type, categoryId);
 
             if (txId) {
-                // 既存レコードの「修正(編集)更新」
+                // 既存レコードの修正
                 state.transactions = state.transactions.map(t => {
                     if (t.id === txId) {
                         return { ...t, date, type, categoryId, categoryName, amount, memo };
@@ -872,26 +878,22 @@
             renderAll();
         }
 
-        // 収支編集の開始（呼び出し）
+        // 収支編集の開始（フォームへ逆引きセット）
         function editTransaction(id) {
             const t = state.transactions.find(item => item.id === id);
             if (!t) return;
 
-            // 1. タブを強制的に切り替える
             switchTab('ledger');
 
-            // 2. フォームに既存の値をセット
             document.getElementById('form-tx-id').value = t.id;
             document.getElementById('form-date').value = t.date;
             document.getElementById('form-type').value = t.type;
             
-            // カテゴリの連動
             updateCategories();
             document.getElementById('form-category').value = t.categoryId;
             document.getElementById('form-amount').value = t.amount;
             document.getElementById('form-memo').value = t.memo || "";
 
-            // 3. フォームのUIを「編集モード」に切り替え
             document.getElementById('ledger-form-title').innerHTML = `📝 収支を修正中...`;
             const btnGroup = document.getElementById('ledger-btn-group');
             btnGroup.innerHTML = `
@@ -904,15 +906,12 @@
                     </button>
                 </div>
             `;
-            // カレンダーの日付を選択日付にする
             selectedDate = t.date;
             renderCalendar();
 
-            // 画面を一番上のフォームまでスムーズにスクロール（スマホ対策）
             document.getElementById('ledger-form-title').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 収支フォームの初期状態リセット
         function resetLedgerForm() {
             document.getElementById('form-tx-id').value = "";
             document.getElementById('form-date').value = selectedDate;
@@ -1058,29 +1057,26 @@
             renderAll();
         }
 
-        // 勤務簿編集の開始（フォームへ逆引きセット）
+        // 勤務簿編集の開始
         function editTimeRecord(id) {
             const t = state.timecard.find(item => item.id === id);
             if (!t) return;
 
             switchTab('timecard');
 
-            // 1. フォームへの値反映
             document.getElementById('form-time-id').value = t.id;
             document.getElementById('time-date').value = t.date;
             
-            // メンバー選択
             const mSelect = document.getElementById('time-member');
             mSelect.value = (t.member === "妻" ? "ミキ" : (t.member === "代表" ? "マサミ" : t.member));
 
-            // 時刻がドロップダウンの選択肢に存在するか確認しつつセット
             const startSelect = document.getElementById('time-start');
             const endSelect = document.getElementById('time-end');
             
+            // 24時間すべての選択肢に適合させて選択
             if ([...startSelect.options].some(o => o.value === t.start)) {
                 startSelect.value = t.start;
             } else {
-                // 範囲外の場合は特例で選択肢を追加して適合させる
                 const opt = new Option(t.start, t.start, true, true);
                 startSelect.add(opt);
             }
@@ -1096,7 +1092,6 @@
             document.getElementById('time-category').value = t.category || "一般事務・経理";
             document.getElementById('time-memo').value = t.memo || "";
 
-            // 2. フォームUIの「編集状態」への移行
             document.getElementById('timecard-form-title').innerHTML = `📝 勤務ログを修正中...`;
             const btnGroup = document.getElementById('timecard-btn-group');
             btnGroup.innerHTML = `
@@ -1116,12 +1111,13 @@
             document.getElementById('timecard-form-title').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // 初期デフォルト（19:00〜23:00）にリセットする
         function resetTimecardForm() {
             document.getElementById('form-time-id').value = "";
             document.getElementById('time-date').value = selectedDate;
             document.getElementById('time-member').value = "マサミ";
-            document.getElementById('time-start').value = "19:00";
-            document.getElementById('time-end').value = "23:00";
+            document.getElementById('time-start').value = "19:00"; // デフォルト
+            document.getElementById('time-end').value = "23:00";   // デフォルト
             document.getElementById('time-break').value = "0";
             document.getElementById('time-category').value = "一般事務・経理";
             document.getElementById('time-memo').value = "";
@@ -1214,7 +1210,6 @@
 
             switchTab('vehicle');
 
-            // 1. フォームへ復元
             document.getElementById('form-vehicle-id').value = v.id;
             document.getElementById('car-date').value = v.date;
             document.getElementById('car-driver').value = (v.driver === "代表" ? "マサミ" : (v.driver === "妻" ? "ミキ" : v.driver));
@@ -1223,7 +1218,6 @@
             document.getElementById('car-end-odometer').value = v.endOdo;
             document.getElementById('car-destination').value = v.destination || "";
 
-            // 2. 編集モードボタンへ切り替え
             document.getElementById('vehicle-form-title').innerHTML = `📝 運行記録を修正中...`;
             const btnGroup = document.getElementById('vehicle-btn-group');
             btnGroup.innerHTML = `
@@ -1236,7 +1230,6 @@
                     </button>
                 </div>
             `;
-
             selectedDate = v.date;
             renderCalendar();
 
@@ -1249,7 +1242,6 @@
             document.getElementById('car-driver').value = "マサミ";
             document.getElementById('car-purpose-type').value = "business";
             
-            // 最終走行実績からオドメーターの引き継ぎ算出
             if (state.vehicleLogs.length > 0) {
                 document.getElementById('car-start-odometer').value = state.vehicleLogs[0].endOdo;
             } else {
@@ -1280,7 +1272,6 @@
 
         // ==================== RENDERING & COMPUTATIONS ====================
         function renderAll() {
-            // --- 1. カレンダーの描画 (月曜スタート) ---
             renderCalendar();
 
             // --- 2. 収支側の集計 & 描画 ---
@@ -1312,7 +1303,6 @@
             netEl.className = netInc >= 0 ? "text-2xl font-bold mt-2 text-emerald-400" : "text-2xl font-bold mt-2 text-rose-400";
             document.getElementById('stat-unpaid-salary').textContent = `¥${calculateUnpaidPool().toLocaleString()}`;
 
-            // 収支履歴一覧（修正ボタンと削除ボタンをコンパクトに設置）
             const ledgerTbody = document.getElementById('transaction-rows');
             const ledgerEmpty = document.getElementById('empty-ledger-state');
             ledgerTbody.innerHTML = '';
@@ -1520,7 +1510,7 @@
 
         // 状態保存
         function saveState() {
-            localStorage.setItem('savvy_suite_state_v5', JSON.stringify(state));
+            localStorage.setItem('savvy_suite_state_v6', JSON.stringify(state));
         }
 
         // トースト通知システム
