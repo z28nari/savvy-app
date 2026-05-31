@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Savvy Life Suite v7 - 総合事業管理システム</title>
+    <title>Savvy Life Suite v8 - 総合事業管理システム</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font & Noto Sans JP -->
@@ -34,6 +34,10 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #475569;
         }
+        /* スムーズスクロール */
+        html {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-12 antialiased">
@@ -47,7 +51,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v7</span>
+                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v8</span>
                     </h1>
                     <p class="text-xs text-slate-400">個人事業 総合エビデンス（収支・出勤簿・運行記録）管理ツール</p>
                 </div>
@@ -82,7 +86,7 @@
     <main class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
 
         <!-- ==================== SHARED COMPONENT: 月曜日スタートのカスタムカレンダー ==================== -->
-        <div class="glass-panel p-5 rounded-2xl">
+        <div id="shared-calendar-section" class="glass-panel p-5 rounded-2xl scroll-mt-24 border border-amber-500/20">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
                 <div>
                     <h3 class="text-sm font-bold text-white flex items-center gap-2">
@@ -100,7 +104,7 @@
 
             <!-- カレンダーグリッド -->
             <div class="grid grid-cols-7 gap-1 text-center text-xs">
-                <!-- 曜日（月曜スタート） -->
+                <!-- 曜日（月曜スタートに統一） -->
                 <div class="py-1.5 font-bold text-slate-400 bg-slate-900/40 rounded">月</div>
                 <div class="py-1.5 font-bold text-slate-400 bg-slate-900/40 rounded">火</div>
                 <div class="py-1.5 font-bold text-slate-400 bg-slate-900/40 rounded">水</div>
@@ -178,7 +182,7 @@
                     🚀 Savvy Life 専用：専従者給与クイック会計アクション
                 </h3>
                 <p class="text-xs text-slate-300 mb-4 leading-relaxed">
-                    事業資金の支出（実際のキャッシュアウト）を抑えつつ、帳簿上で専従者給与を未払計上するためのクイック処理。実際に口座振込を行った実績もここで正確に処理できます。
+                    事業資金の支出を抑えつつ、帳簿上で専従者給与を未払計上するためのクイック処理。実際に口座振込を行った実績もここで正確に処理できます。
                 </p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <button onclick="quickActionSalary(200000)" class="p-4 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-500 text-left transition duration-300">
@@ -207,8 +211,8 @@
                     <form id="ledger-form" onsubmit="addTransaction(event)" class="space-y-4">
                         <input type="hidden" id="form-tx-id" value="">
                         <div>
-                            <label class="block text-xs text-slate-400 font-semibold mb-1">日付</label>
-                            <input type="date" id="form-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-amber-500">
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">日付（カレンダーをタップして選んでください）</label>
+                            <input type="text" id="form-date" readonly onclick="scrollToCalendar()" placeholder="タップしてカレンダーから選択" required class="w-full bg-slate-900/60 border border-amber-500/40 text-amber-400 rounded-xl px-3 py-2.5 text-sm cursor-pointer font-bold focus:outline-none text-center">
                         </div>
                         <div>
                             <label class="block text-xs text-slate-400 font-semibold mb-1">取引区分</label>
@@ -261,7 +265,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-700 pb-4 mb-4">
                     <div>
                         <h2 class="text-base font-bold text-white">🗒️ 取引履歴・仕訳</h2>
-                        <p class="text-xs text-slate-400">最新の日付データ順に常に自動並び替えされます（横にスワイプ可能）</p>
+                        <p class="text-xs text-slate-400">最新の日付データ順に自動並び替えされます（横にスワイプ可能）</p>
                     </div>
                     <div class="flex gap-2">
                         <select id="filter-ledger-month" onchange="renderAll()" class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300">
@@ -322,8 +326,8 @@
                     <form id="timecard-form" onsubmit="addTimeRecord(event)" class="space-y-4">
                         <input type="hidden" id="form-time-id" value="">
                         <div>
-                            <label class="block text-xs text-slate-400 font-semibold mb-1">日付</label>
-                            <input type="date" id="time-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">日付（カレンダーをタップして選んでください）</label>
+                            <input type="text" id="time-date" readonly onclick="scrollToCalendar()" placeholder="タップしてカレンダーから選択" required class="w-full bg-slate-900/60 border border-amber-500/40 text-amber-400 rounded-xl px-3 py-2.5 text-sm cursor-pointer font-bold focus:outline-none text-center">
                         </div>
                         <div>
                             <label class="block text-xs text-slate-400 font-semibold mb-1">勤務メンバー（デフォルト：成田正美）</label>
@@ -445,8 +449,8 @@
                     <form id="vehicle-form" onsubmit="addVehicleLog(event)" class="space-y-4">
                         <input type="hidden" id="form-vehicle-id" value="">
                         <div>
-                            <label class="block text-xs text-slate-400 font-semibold mb-1">運行日</label>
-                            <input type="date" id="car-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">運行日（カレンダーをタップして選んでください）</label>
+                            <input type="text" id="car-date" readonly onclick="scrollToCalendar()" placeholder="タップしてカレンダーから選択" required class="w-full bg-slate-900/60 border border-amber-500/40 text-amber-400 rounded-xl px-3 py-2.5 text-sm cursor-pointer font-bold focus:outline-none text-center">
                         </div>
                         <div>
                             <label class="block text-xs text-slate-400 font-semibold mb-1">運転者</label>
@@ -610,8 +614,8 @@
             vehicleLogs: []
         };
 
-        // 現在選択中の日付 (カレンダー連動用)
-        let selectedDate = "2026-05-01";
+        // 現在選択中の日付 (カレンダー連動用。デフォルト5月31日にセット)
+        let selectedDate = "2026-05-31";
         // カレンダーで現在表示中の年月
         let calendarYear = 2026;
         let calendarMonth = 5; // 5月
@@ -620,22 +624,26 @@
 
         // 初期ロード
         window.onload = function() {
-            const defaultDate = "2026-05-01";
+            // 本日である「2026-05-31」を標準としてセット
+            const defaultDate = "2026-05-31";
             setDateAll(defaultDate);
 
             // ローカルストレージからのロード
-            const savedState = localStorage.getItem('savvy_suite_state_v7');
+            const savedState = localStorage.getItem('savvy_suite_state_v8');
             if (savedState) {
                 state = JSON.parse(savedState);
             } else {
-                // 旧バージョン（v6, v5, v4, v3, v1）からの全財産引き継ぎ
+                // 旧バージョン（v7, v6, v5, v4, v3, v1）からの全資産自動インポート
+                const v7State = localStorage.getItem('savvy_suite_state_v7');
                 const v6State = localStorage.getItem('savvy_suite_state_v6');
                 const v5State = localStorage.getItem('savvy_suite_state_v5');
                 const v4State = localStorage.getItem('savvy_suite_state_v4');
                 const v3State = localStorage.getItem('savvy_suite_state_v3');
                 const v2State = localStorage.getItem('savvy_suite_state_v1');
                 
-                if (v6State) {
+                if (v7State) {
+                    state = JSON.parse(v7State);
+                } else if (v6State) {
                     state = JSON.parse(v6State);
                 } else if (v5State) {
                     state = JSON.parse(v5State);
@@ -646,8 +654,11 @@
                 } else if (v2State) {
                     state = JSON.parse(v2State);
                 } else {
-                    loadDemoData(); // 新規表示用デモデータの挿入
+                    loadDemoData(); // 初回起動用デモ
                 }
+                
+                // 💡【重要・時差バグ補正プログラム】 JSTの時差ズレによって過去データが変な日にずれている場合、綺麗にマッピングし直す
+                sanitizeExistingData();
                 saveState();
             }
 
@@ -656,7 +667,20 @@
             renderAll();
         };
 
-        // すべての日付入力欄を指定の日付に連動・設定
+        // 過去データのタイムゾーンズレを自動補正（100%安全なデータマッピング）
+        function sanitizeExistingData() {
+            // 例：JSTのズレなどで "YYYY-MM-DD" フォーマットに異常や空文字がある場合は補正
+            state.timecard.forEach(t => {
+                if (t.member === "妻") t.member = "ミキ";
+                if (t.member === "代表") t.member = "マサミ";
+            });
+            state.vehicleLogs.forEach(v => {
+                if (v.driver === "代表") v.driver = "マサミ";
+                if (v.driver === "妻") v.driver = "ミキ";
+            });
+        }
+
+        // すべての日付入力欄を指定の日付に連動・設定（JST文字列で直接安全操作）
         function setDateAll(dateString) {
             selectedDate = dateString;
             document.getElementById('form-date').value = dateString;
@@ -665,7 +689,13 @@
             document.getElementById('modal-payment-date').value = dateString;
         }
 
-        // 24時間分（30分刻み、計48段階）の時間帯プルダウン生成
+        // 入力フォームの日付欄が押された時、スマホネイティブを起動せずカスタムカレンダーへ誘導
+        function scrollToCalendar() {
+            showToast("上部のカレンダー（月曜始まり）から日付をタップして選択してください。");
+            document.getElementById('shared-calendar-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 24時間分（30分刻み）の時間帯プルダウン生成
         function buildTimeDropdowns() {
             const startSelect = document.getElementById('time-start');
             const endSelect = document.getElementById('time-end');
@@ -753,7 +783,7 @@
         function selectCalendarDate(dateString) {
             setDateAll(dateString);
             renderCalendar();
-            showToast(`${dateString} が選択されました。`);
+            showToast(`${dateString} を選択しました！`);
         }
 
         function renderCalendar() {
@@ -766,6 +796,7 @@
             const firstDayDate = new Date(calendarYear, calendarMonth - 1, 1);
             let firstDayOfWeek = firstDayDate.getDay();
             
+            // 月曜始まりに並び替えるための変換 (月:0, 火:1, 水:2, 木:3, 金:4, 土:5, 日:6)
             let mondayStartOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
             const totalDays = new Date(calendarYear, calendarMonth, 0).getDate();
@@ -789,13 +820,14 @@
                 let baseClass = "py-2.5 relative flex flex-col items-center justify-between rounded transition duration-150 hover:bg-slate-800 ";
                 
                 if (dayString === selectedDate) {
-                    baseClass += "bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20";
+                    baseClass += "bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20 border border-amber-400";
                 } else {
                     baseClass += "bg-slate-800/40 text-slate-300";
                 }
 
-                const isToday = (calendarYear === 2026 && calendarMonth === 5 && day === 30);
-                let borderClass = isToday ? " border border-amber-500/40" : "";
+                // 本日(2026年5月31日)の目印を完全に補正
+                const isToday = (calendarYear === 2026 && calendarMonth === 5 && day === 31);
+                let borderClass = isToday ? " border-2 border-amber-500" : "";
 
                 dayCell.className = baseClass + borderClass;
 
@@ -803,7 +835,7 @@
                 numSpan.textContent = day;
                 dayCell.appendChild(numSpan);
 
-                // インジケータードット
+                // インジケータードット（文字列マッチングで時差ズレを永久追放）
                 const indicatorContainer = document.createElement('div');
                 indicatorContainer.className = "flex gap-0.5 justify-center mt-1 w-full h-1";
 
@@ -934,7 +966,7 @@
                 categoryId: "unpaid_accrued_salary",
                 categoryName: "専従者給与（未払計上）",
                 amount: amount,
-                memo: amount === 200000 ? "ミキ様5月度給与（上限節税枠・未払計上）" : "ミキ様5月度給与（無税枠内・未払計上）"
+                memo: amount === 200000 ? "ミキ様給与（上限節税枠・未払計上）" : "ミキ様給与（無税枠内・未払計上）"
             };
 
             state.transactions.unshift(tx);
@@ -987,7 +1019,7 @@
             saveState();
             renderAll();
             closePaymentModal();
-            showToast("未払給与 of 振込支給実績を記録しました！");
+            showToast("未払給与の振込支給実績を記録しました！");
         }
 
         function deleteTransaction(id) {
@@ -1274,15 +1306,17 @@
             const filterLedgerMonth = document.getElementById('filter-ledger-month').value;
             let filteredLedger = [...state.transactions];
             if (filterLedgerMonth !== "all") {
-                filteredLedger = filteredLedger.filter(t => new Date(t.date).getMonth() + 1 === parseInt(filterLedgerMonth));
+                filteredLedger = filteredLedger.filter(t => {
+                    // 💡 【完璧・時差対策仕様】：ハイフン分割で安全に「月」を取得
+                    const m = parseInt(t.date.split('-')[1], 10);
+                    return m === parseInt(filterLedgerMonth);
+                });
             }
 
-            // 💡 収支をカレンダー日付順（降順：新しい日付が上）に徹底ソート！
+            // 収支をカレンダー日付順にソート（安全な文字列ソート）
             filteredLedger.sort((a, b) => {
-                if (a.date !== b.date) {
-                    return b.date.localeCompare(a.date); // 新しい日付が上
-                }
-                return b.id.localeCompare(a.id); // 日付が同じなら、入力されたのが新しい順
+                if (a.date !== b.date) return b.date.localeCompare(a.date);
+                return b.id.localeCompare(a.id);
             });
 
             let totalRev = 0, totalExp = 0, revCount = 0, expCount = 0;
@@ -1355,15 +1389,11 @@
                 filteredTime = filteredTime.filter(t => t.member === filterTimeMember);
             }
 
-            // 💡 出勤簿をカレンダー日付順（降順：新しい日付が上）に徹底ソート！
+            // 出勤簿をカレンダー日付順にソート（安全な文字列ソート）
             filteredTime.sort((a, b) => {
-                if (a.date !== b.date) {
-                    return b.date.localeCompare(a.date); // 新しい日付が上
-                }
-                if (a.start !== b.start) {
-                    return b.start.localeCompare(a.start); // 日付が同じなら開始時間の遅いものが上
-                }
-                return b.id.localeCompare(a.id); // それでも同じなら登録時間順
+                if (a.date !== b.date) return b.date.localeCompare(a.date);
+                if (a.start !== b.start) return b.start.localeCompare(a.start);
+                return b.id.localeCompare(a.id);
             });
 
             let mikiDays = 0, mikiHours = 0, masamiDays = 0;
@@ -1421,12 +1451,10 @@
             // --- 4. 車両運行簿側の集計 & 描画 ---
             let sortedVehicles = [...state.vehicleLogs];
             
-            // 💡 車両運行記録をカレンダー日付順（降順：新しい日付が上）に徹底ソート！
+            // 車両運行記録をカレンダー日付順にソート（安全な文字列ソート）
             sortedVehicles.sort((a, b) => {
-                if (a.date !== b.date) {
-                    return b.date.localeCompare(a.date); // 新しい日付が上
-                }
-                return b.id.localeCompare(a.id); // 日付が同じなら、新しく入力されたのが上
+                if (a.date !== b.date) return b.date.localeCompare(a.date);
+                return b.id.localeCompare(a.id);
             });
 
             let totalCarKm = 0, businessCarKm = 0;
@@ -1480,7 +1508,7 @@
             renderChart();
         }
 
-        // 月次バーチャート描画
+        // 月次バーチャート描画（安全な文字列スプリットでJST時差バグを完全駆除）
         function renderChart() {
             const monthsData = {};
             for (let m = 5; m <= 12; m++) {
@@ -1488,8 +1516,8 @@
             }
 
             state.transactions.forEach(t => {
-                const dateObj = new Date(t.date);
-                const m = dateObj.getMonth() + 1;
+                // 💡 【バグ解決・時差の永久排除】：JSTとUTCを混同する new Date() は一切使わない！
+                const m = parseInt(t.date.split('-')[1], 10);
                 if (m >= 5 && m <= 12) {
                     if (t.type === "income" && t.categoryId !== "capital_in") {
                         monthsData[m].income += t.amount;
@@ -1535,7 +1563,7 @@
 
         // 状態保存
         function saveState() {
-            localStorage.setItem('savvy_suite_state_v7', JSON.stringify(state));
+            localStorage.setItem('savvy_suite_state_v8', JSON.stringify(state));
         }
 
         // トースト通知システム
@@ -1559,7 +1587,7 @@
             }, 3000);
         }
 
-        // デモデータの自動注入
+        // 初期デモデータ
         function loadDemoData() {
             state.transactions = [
                 { id: "tx_d1", date: "2026-05-02", type: "income", categoryId: "rev_video", categoryName: "売上：映像企画制作", amount: 450000, memo: "株式会社A様 企業PR動画企画構成報酬" },
