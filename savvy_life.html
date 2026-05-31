@@ -1,30 +1,44 @@
-<!DOCTYPE html>
+```htm<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Savvy Life Suite - 総合事業管理システム</title>
+    <title>Savvy Life Suite v3 - 総合事業管理システム</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font & Noto Sans JP -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
-            background-color: #0f172a;
+            background-color: #0f172a; /* Slate 900 */
             color: #f8fafc;
         }
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-12 antialiased">
 
+    <!-- ヘッダーセクション -->
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-4 py-4">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -33,24 +47,26 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite</span>
+                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v3</span>
                     </h1>
-                    <p class="text-xs text-slate-400">個人事業 総合エビデンス管理 (機能強化版)</p>
+                    <p class="text-xs text-slate-400">個人事業 総合エビデンス（収支・出勤簿・運行記録）管理ツール</p>
                 </div>
             </div>
             
+            <!-- タブ切り替えメニュー -->
             <div class="flex bg-slate-950/60 p-1 rounded-xl border border-slate-800 w-full md:w-auto overflow-x-auto">
                 <button onclick="switchTab('ledger')" id="tab-ledger" class="flex-1 md:flex-none text-xs px-4 py-2 rounded-lg font-medium transition duration-150 whitespace-nowrap bg-amber-500 text-slate-950">
-                    💰 収支・領収書
+                    💰 収支管理
                 </button>
                 <button onclick="switchTab('timecard')" id="tab-timecard" class="flex-1 md:flex-none text-xs px-4 py-2 rounded-lg font-medium transition duration-150 whitespace-nowrap text-slate-400 hover:text-white">
-                    ⏱️ 業務ログ
+                    ⏱️ 出勤簿・業務ログ
                 </button>
                 <button onclick="switchTab('vehicle')" id="tab-vehicle" class="flex-1 md:flex-none text-xs px-4 py-2 rounded-lg font-medium transition duration-150 whitespace-nowrap text-slate-400 hover:text-white">
-                    🚗 運行記録・メーター
+                    🚗 車両運行記録 (按分)
                 </button>
             </div>
 
+            <!-- エクスポート/インポート -->
             <div class="flex items-center gap-2 w-full md:w-auto justify-end">
                 <button onclick="exportAllData()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition flex items-center gap-1">
                     エクスポート
@@ -65,32 +81,130 @@
 
     <main class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
 
-        <div id="sect-ledger" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="glass-panel p-5 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium">総売上 (事業収入)</p>
-                    <p id="stat-total-revenue" class="text-2xl font-bold mt-2 text-emerald-400">¥0</p>
+        <!-- ==================== SHARED COMPONENT: 月曜日スタートのカスタムカレンダー ==================== -->
+        <div class="glass-panel p-5 rounded-2xl">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        📅 カレンダー日付選択（月曜日スタート）
+                    </h3>
+                    <p class="text-[11px] text-slate-400">日付をタップすると、以下の各入力フォームの日付が自動的に切り替わります。</p>
                 </div>
-                <div class="glass-panel p-5 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium">総必要経費 (控除対象)</p>
-                    <p id="stat-total-expense" class="text-2xl font-bold mt-2 text-rose-400">¥0</p>
-                </div>
-                <div class="glass-panel p-5 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium">現在の事業所得 (利益)</p>
-                    <p id="stat-net-income" class="text-2xl font-bold mt-2 text-amber-400">¥0</p>
-                </div>
-                <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500 bg-slate-800/80">
-                    <p class="text-xs text-amber-400 font-semibold">未払給与額 (プール残高)</p>
-                    <p id="stat-unpaid-salary" class="text-2xl font-bold mt-2 text-white">¥0</p>
+                <!-- カレンダーの月切り替え -->
+                <div class="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                    <button onclick="changeCalendarMonth(-1)" class="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white text-xs">◀</button>
+                    <span id="calendar-month-label" class="text-xs font-bold text-amber-400 px-2">2026年 5月</span>
+                    <button onclick="changeCalendarMonth(1)" class="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white text-xs">▶</button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="glass-panel p-6 rounded-2xl h-fit space-y-4" id="ledger-form-container">
-                    <h2 class="text-base font-bold text-white flex items-center gap-2 border-b border-slate-700 pb-3" id="ledger-form-title">
-                        💰 収支登録
-                    </h2>
-                    <form id="ledger-form" onsubmit="saveTransaction(event)" class="space-y-4">
+            <!-- カレンダーグリッド -->
+            <div class="grid grid-cols-7 gap-1 text-center text-xs">
+                <!-- 曜日（月曜スタート） -->
+                <div class="py-1.5 font-bold text-slate-400 bg-slate-900/40 rounded">月</div>
+                <div class="py-1.5 font-bold text-slate-400 bg-slate-900/40 rounded">火</div>
+                <div class="py-1.5 font-bold text-slate-400 bg-slate-900/40 rounded">水</div>
+                <div class="py-1.5 font-bold text-slate-400 bg-slate-900/40 rounded">木</div>
+                <div class="py-1.5 font-bold text-slate-400 bg-slate-900/40 rounded">金</div>
+                <div class="py-1.5 font-bold text-slate-300 bg-slate-900/40 rounded">土</div>
+                <div class="py-1.5 font-bold text-rose-400 bg-slate-900/40 rounded">日</div>
+
+                <!-- 日付セル（JSで動的に流し込みます） -->
+                <div class="contents" id="calendar-days-container"></div>
+            </div>
+
+            <!-- ステータス凡例 -->
+            <div class="flex flex-wrap gap-4 mt-3 pt-3 border-t border-slate-800/60 text-[10px] text-slate-400">
+                <span class="flex items-center gap-1">
+                    <span class="inline-block w-2.5 h-2.5 rounded bg-amber-500"></span> 選択中
+                </span>
+                <span class="flex items-center gap-1">
+                    <span class="inline-block w-2.5 h-1 rounded-full bg-emerald-400"></span> マサミ様稼働
+                </span>
+                <span class="flex items-center gap-1">
+                    <span class="inline-block w-2.5 h-1 rounded-full bg-amber-400"></span> ミキ様稼働
+                </span>
+                <span class="flex items-center gap-1">
+                    <span class="inline-block w-2.5 h-1 rounded-full bg-sky-400"></span> 車両運行あり
+                </span>
+            </div>
+        </div>
+
+
+        <!-- ==================== TAB 1: LEDGER (収支管理) ==================== -->
+        <div id="sect-ledger" class="space-y-6">
+            <!-- 収支ダッシュボード -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+                    <p class="text-xs text-slate-400 font-medium tracking-wider">総売上 (事業収入)</p>
+                    <p id="stat-total-revenue" class="text-2xl font-bold mt-2 text-emerald-400">¥0</p>
+                    <div class="mt-2 text-xs text-slate-400 flex justify-between items-center">
+                        <span>課税所得のベース</span>
+                        <span id="stat-revenue-count">0 件</span>
+                    </div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+                    <p class="text-xs text-slate-400 font-medium tracking-wider">総必要経費 (控除対象)</p>
+                    <p id="stat-total-expense" class="text-2xl font-bold mt-2 text-rose-400">¥0</p>
+                    <div class="mt-2 text-xs text-slate-400 flex justify-between items-center">
+                        <span>専従者給与含む</span>
+                        <span id="stat-expense-count">0 件</span>
+                    </div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+                    <p class="text-xs text-slate-400 font-medium tracking-wider">現在の事業所得 (利益)</p>
+                    <p id="stat-net-income" class="text-2xl font-bold mt-2 text-amber-400">¥0</p>
+                    <div class="mt-2 text-xs text-slate-400 flex justify-between items-center">
+                        <span>課税対象額</span>
+                        <span class="text-emerald-400 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded text-[10px]">本業合算で節税進行中</span>
+                    </div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500 bg-slate-800/80">
+                    <p class="text-xs text-amber-400 font-semibold tracking-wider flex items-center gap-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        ミキ様 未払給与額 (プール残高)
+                    </p>
+                    <p id="stat-unpaid-salary" class="text-2xl font-bold mt-2 text-white">¥0</p>
+                    <div class="mt-2 text-xs text-slate-400 flex justify-between items-center">
+                        <span>確定申告用の経費化済み</span>
+                        <span class="text-amber-300 font-medium text-[10px] bg-amber-500/10 px-1.5 py-0.5 rounded">未払管理中</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- クイックアクション専従者給与 -->
+            <div class="glass-panel p-6 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-950/10 to-slate-800/90">
+                <h3 class="text-sm font-semibold text-amber-400 flex items-center gap-2 mb-3">
+                    🚀 Savvy Life 専用：専従者給与クイック会計アクション
+                </h3>
+                <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                    事業資金の支出（実際のキャッシュアウト）を抑えつつ、帳簿上で専従者給与を未払計上するためのクイック処理。実際に口座振込を行った実績もここで正確に処理できます。
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button onclick="quickActionSalary(200000)" class="p-4 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-500 text-left transition duration-300">
+                        <span class="text-[10px] text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full">節税枠上限</span>
+                        <h4 class="font-bold text-sm text-white mt-2">給与 20万円を未払計上</h4>
+                        <p class="text-xs text-slate-400 mt-1">手元の現金は減らさず、20万円の経費だけを計上します。</p>
+                    </button>
+                    <button onclick="quickActionSalary(85000)" class="p-4 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-500 text-left transition duration-300">
+                        <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">ミキ様無税ライン</span>
+                        <h4 class="font-bold text-sm text-white mt-2">給与 8.5万円を未払計上</h4>
+                        <p class="text-xs text-slate-400 mt-1">年間103万円以下に抑え、奥様の税金を0に保ちつつ経費化。</p>
+                    </button>
+                    <button onclick="openPaymentModal()" class="p-4 rounded-xl bg-slate-900 border border-slate-700 hover:border-emerald-500 text-left transition duration-300">
+                        <span class="text-[10px] text-sky-400 font-bold bg-sky-500/10 px-2 py-0.5 rounded-full">振込実績の記録</span>
+                        <h4 class="font-bold text-sm text-white mt-2">未払給与の「実際の支払」</h4>
+                        <p class="text-xs text-slate-400 mt-1">プールされた未払い金を実際に奥様に振り込んだ履歴を記録。</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- メイングリッド -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- フォーム -->
+                <div class="glass-panel p-6 rounded-2xl h-fit space-y-4">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2 border-b border-slate-700 pb-3">💰 収支登録</h2>
+                    <form id="ledger-form" onsubmit="addTransaction(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs text-slate-400 font-semibold mb-1">日付</label>
                             <input type="date" id="form-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-amber-500">
@@ -113,214 +227,276 @@
                             <input type="number" id="form-amount" min="1" required placeholder="10000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-400 font-semibold mb-1">メモ・取引先・内容</label>
-                            <input type="text" id="form-memo" placeholder="株式会社〇〇、機材購入、食事代など" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">メモ・取引先</label>
+                            <input type="text" id="form-memo" placeholder="動画編集、機材購入、ミキ様給料など" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
-                        
-                        <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/50">
-                            <label class="block text-xs text-slate-400 font-semibold mb-2">領収書・レシート画像 (任意)</label>
-                            <div class="flex items-center gap-3">
-                                <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg transition flex items-center gap-2">
-                                    📷 写真を撮る / 選ぶ
-                                    <input type="file" id="form-receipt" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event, 'ledger')">
-                                </label>
-                                <div id="ledger-preview-container" class="hidden relative">
-                                    <img id="ledger-preview" src="" class="h-10 w-10 object-cover rounded-lg border border-slate-500 cursor-pointer" onclick="openImageModal(this.src)">
-                                    <button type="button" onclick="clearImage('ledger')" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px]">&times;</button>
-                                </div>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-1">※自動で軽量化して保存されます。</p>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button type="button" id="ledger-cancel-btn" onclick="cancelEdit('ledger')" class="hidden w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl transition text-sm">
-                                キャンセル
-                            </button>
-                            <button type="submit" id="ledger-submit-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">
-                                収支を保存する
-                            </button>
-                        </div>
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">
+                            収支を保存する
+                        </button>
                     </form>
                 </div>
 
-                <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-700 pb-4 mb-4">
-                        <h2 class="text-base font-bold text-white">🗒️ 取引履歴・仕訳</h2>
-                        <div class="flex items-center gap-2 w-full sm:w-auto">
-                            <select id="filter-ledger-month" onchange="renderAll()" class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300">
-                                <option value="all">すべての月</option>
-                                <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
-                                <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
-                                <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
-                                <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-                            </select>
-                            <button onclick="exportMonthlyReport()" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-                                📊 月別レポート出力
-                            </button>
+                <!-- 収支チャート -->
+                <div class="glass-panel p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                            <h2 class="text-base font-bold text-white">📈 月別収支推移</h2>
+                            <span class="text-[10px] text-slate-400">2026年 収支推移グラフ</span>
                         </div>
+                        <div class="space-y-4" id="monthly-bars-container"></div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-slate-300">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/60">
-                                <tr>
-                                    <th class="px-4 py-3">日付</th>
-                                    <th class="px-4 py-3">区分</th>
-                                    <th class="px-4 py-3">勘定科目・メモ</th>
-                                    <th class="px-4 py-3">金額</th>
-                                    <th class="px-4 py-3 text-center">画像</th>
-                                    <th class="px-4 py-3 text-center">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transaction-rows"></tbody>
-                        </table>
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/60 text-xs text-slate-400 mt-4">
+                        💡 現在マサミ様のサラリーマン所得（1,700万円）との損益通算が有利になるよう設定されています。ここで専従者給与を計上すると世帯全体の税負担（最高税率約43%）が大幅に軽減されます。
                     </div>
-                    <div id="empty-ledger-state" class="hidden text-center py-12 text-slate-500">取引履歴はありません。</div>
+                </div>
+            </div>
+
+            <!-- 取引履歴テーブル -->
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-700 pb-4 mb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-white">🗒️ 取引履歴・仕訳</h2>
+                        <p class="text-xs text-slate-400">最新の取引データが一覧表示されます</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="filter-ledger-month" onchange="renderAll()" class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300">
+                            <option value="all">すべての月</option>
+                            <option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option>
+                            <option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="text-xs text-slate-400 uppercase bg-slate-900/60">
+                            <tr>
+                                <th class="px-4 py-3">日付</th>
+                                <th class="px-4 py-3">取引区分</th>
+                                <th class="px-4 py-3">勘定科目</th>
+                                <th class="px-4 py-3">金額</th>
+                                <th class="px-4 py-3">メモ</th>
+                                <th class="px-4 py-3 text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-rows"></tbody>
+                    </table>
+                </div>
+                <div id="empty-ledger-state" class="hidden text-center py-12 text-slate-500">
+                    取引履歴はありません。
                 </div>
             </div>
         </div>
 
+        <!-- ==================== TAB 2: TIMECARD (出勤簿・業務ログ) ==================== -->
         <div id="sect-timecard" class="hidden space-y-6">
+            <!-- 勤務ダッシュボード -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="glass-panel p-5 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium">ミキ様 (妻) の総労働日数 (当月)</p>
+                    <p id="stat-miki-days" class="text-2xl font-bold mt-2 text-amber-400">0 日</p>
+                    <div class="mt-2 text-xs text-slate-400">青色専従者の実働実績エビデンス</div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium">ミキ様 の総労働時間 (当月)</p>
+                    <p id="stat-miki-hours" class="text-2xl font-bold mt-2 text-amber-400">0 時間</p>
+                    <div class="mt-2 text-xs text-slate-400">毎日の業務稼働時間状況</div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500">
+                    <p class="text-xs text-emerald-400 font-semibold">マサミ様 (代表) の活動日数 (当月)</p>
+                    <p id="stat-masami-days" class="text-2xl font-bold mt-2 text-white">0 日</p>
+                    <div class="mt-2 text-xs text-slate-400">本業と並行した事業の稼働実績</div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="glass-panel p-6 rounded-2xl h-fit space-y-4" id="timecard-form-container">
-                    <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3" id="timecard-form-title">⏱️ 勤務ログ登録</h2>
-                    <form id="timecard-form" onsubmit="saveTimeRecord(event)" class="space-y-4">
+                <!-- 勤務入力フォーム -->
+                <div class="glass-panel p-6 rounded-2xl h-fit space-y-4">
+                    <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3">⏱️ 勤務・業務ログを記録</h2>
+                    <form id="timecard-form" onsubmit="addTimeRecord(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs text-slate-400 font-semibold mb-1">日付</label>
                             <input type="date" id="time-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-400 font-semibold mb-1">勤務メンバー</label>
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">勤務メンバー（デフォルト：成田正美）</label>
                             <select id="time-member" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                <option value="マサミ" selected>成田 正美 (代表)</option>
                                 <option value="ミキ">ナリタ ミキ (妻)</option>
-                                <option value="マサミ">成田 正美 (代表)</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs text-slate-400 font-semibold mb-1">開始</label>
-                                <input type="time" id="time-start" value="09:00" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                <label class="block text-xs text-slate-400 font-semibold mb-1">開始時間（19:00〜23:00）</label>
+                                <select id="time-start" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                    <!-- 動的に生成されます -->
+                                </select>
                             </div>
                             <div>
-                                <label class="block text-xs text-slate-400 font-semibold mb-1">終了</label>
-                                <input type="time" id="time-end" value="14:00" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                <label class="block text-xs text-slate-400 font-semibold mb-1">終了時間（19:00〜23:00）</label>
+                                <select id="time-end" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                    <!-- 動的に生成されます -->
+                                </select>
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-400 font-semibold mb-1">休憩時間 (分)</label>
-                            <input type="number" id="time-break" value="60" min="0" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">休憩時間 (分、デフォルト：0分)</label>
+                            <input type="number" id="time-break" value="0" min="0" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">主な業務カテゴリ</label>
+                            <select id="time-category" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                <option value="一般事務・経理">会計一般事務・帳簿付け</option>
+                                <option value="映像企画制作アシスタント">映像企画・撮影アシスタント</option>
+                                <option value="SNS運営・マーケティング">SNS更新・メディアマーケティング</option>
+                                <option value="建設PM・コンサル補助">建設PM・現場資料整理補助</option>
+                                <option value="輸出入関連・検品">輸出入検品・配送手配事務</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs text-slate-400 font-semibold mb-1">業務詳細メモ</label>
-                            <input type="text" id="time-memo" placeholder="経理事務など" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                            <input type="text" id="time-memo" placeholder="マネーフォワード領収書入力、動画台本リサーチ" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
-                        
-                        <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/50 grid grid-cols-2 gap-2">
-                            <div class="col-span-2">
-                                <span class="block text-[11px] text-amber-400 font-bold mb-1">👥 打ち合わせ情報 (ある場合のみ)</span>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-slate-400 font-semibold mb-1">参加者・人数</label>
-                                <input type="text" id="time-attendees" placeholder="例：〇〇社3名" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-white text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-slate-400 font-semibold mb-1">打合せ時間 (分)</label>
-                                <input type="number" id="time-meeting-duration" placeholder="例：60" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-white text-xs">
-                            </div>
-                        </div>
-                        
-                        <div class="flex gap-2">
-                            <button type="button" id="timecard-cancel-btn" onclick="cancelEdit('timecard')" class="hidden w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl transition text-sm">キャンセル</button>
-                            <button type="submit" id="timecard-submit-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">記録を保存</button>
-                        </div>
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">
+                            勤務ログを保存する
+                        </button>
                     </form>
                 </div>
-                <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
-                    <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3 mb-4">🗓️ 業務実施日誌</h2>
+
+                <!-- 勤務履歴リスト -->
+                <div class="glass-panel p-6 rounded-2xl lg:col-span-2 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                        <div class="flex flex-col">
+                            <h2 class="text-base font-bold text-white">🗓️ 勤務・業務実施日誌</h2>
+                            <p class="text-[10px] text-amber-400 mt-0.5">💡 詳細メモをタップすると、元の長い全文章が表示／非表示されます。</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="filter-time-member" onchange="renderAll()" class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-slate-300">
+                                <option value="all">全員</option>
+                                <option value="ミキ">ミキ様のみ</option>
+                                <option value="マサミ">マサミ様のみ</option>
+                            </select>
+                        </div>
+                    </div>
+                    
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-300">
                             <thead class="text-xs text-slate-400 uppercase bg-slate-900/60">
                                 <tr>
-                                    <th class="px-4 py-3">日付・氏名</th>
-                                    <th class="px-4 py-3">時間 (実働)</th>
-                                    <th class="px-4 py-3">業務内容・打ち合わせ</th>
+                                    <th class="px-4 py-3">日付</th>
+                                    <th class="px-4 py-3">氏名</th>
+                                    <th class="px-4 py-3">時間 (休憩)</th>
+                                    <th class="px-4 py-3">実働</th>
+                                    <th class="px-4 py-3">主な業務内容</th>
+                                    <th class="px-4 py-3">詳細メモ（頭5文字）</th>
                                     <th class="px-4 py-3 text-center">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="timecard-rows"></tbody>
                         </table>
                     </div>
+                    <div id="empty-timecard-state" class="hidden text-center py-12 text-slate-500">
+                        勤務記録はありません。
+                    </div>
+                    <div class="p-3 bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200 rounded-lg">
+                        ⚠️ **税法上の注意点（青色専従者給与エビデンス）：**<br>
+                        専従者給与の妥当性を保つため、「実際に業務を行っている証拠」としてこの記録を印刷またはCSV保存し、確定申告書・帳簿と共に必ず保管してください。
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- ==================== TAB 3: VEHICLE (車両運行記録) ==================== -->
         <div id="sect-vehicle" class="hidden space-y-6">
+            <!-- 車両ダッシュボード -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500">
+                    <p class="text-xs text-slate-400 font-medium">今月の総走行距離</p>
+                    <p id="stat-car-total-km" class="text-2xl font-bold mt-2 text-white">0 km</p>
+                    <div class="mt-2 text-xs text-slate-400">メーター記録の総距離</div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500">
+                    <p class="text-xs text-slate-400 font-medium">うち 事業目的の走行</p>
+                    <p id="stat-car-business-km" class="text-2xl font-bold mt-2 text-emerald-400">0 km</p>
+                    <div class="mt-2 text-xs text-slate-400">映像ロケ、現場PM、仕入れなど</div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900">
+                    <p class="text-xs text-amber-400 font-bold">✨ 車両の【事業用按分割合】</p>
+                    <p id="stat-car-business-ratio" class="text-3xl font-black mt-2 text-amber-400">0%</p>
+                    <div class="mt-2 text-xs text-slate-300">確定申告（家事按分）時の控除率エビデンス</div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="glass-panel p-6 rounded-2xl h-fit space-y-4" id="vehicle-form-container">
-                    <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3" id="vehicle-form-title">🚗 運行記録登録</h2>
-                    <form id="vehicle-form" onsubmit="saveVehicleLog(event)" class="space-y-4">
+                <!-- 車両運行入力フォーム -->
+                <div class="glass-panel p-6 rounded-2xl h-fit space-y-4">
+                    <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3">🚗 運行記録を入力</h2>
+                    <form id="vehicle-form" onsubmit="addVehicleLog(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs text-slate-400 font-semibold mb-1">運行日</label>
                             <input type="date" id="car-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-400 font-semibold mb-1">利用目的</label>
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">運転者</label>
+                            <select id="car-driver" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                <option value="マサミ" selected>成田 正美 (代表)</option>
+                                <option value="ミキ">ナリタ ミキ (妻)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">利用目的のタイプ</label>
                             <select id="car-purpose-type" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
-                                <option value="business">事業用 (ロケ・打合せ・仕入れなど)</option>
-                                <option value="private">個人用 (プライベート・家事など)</option>
+                                <option value="business">事業用 (映像ロケ・現場PM・打合せなど)</option>
+                                <option value="private">個人用 (買い物・レジャーなどプライベート)</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs text-slate-400 font-semibold mb-1">乗車前メーター</label>
-                                <input type="number" id="car-start-odometer" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                <label class="block text-xs text-slate-400 font-semibold mb-1">乗車前メーター (km)</label>
+                                <input type="number" id="car-start-odometer" required placeholder="12500" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-slate-400 font-semibold mb-1">降車後メーター</label>
-                                <input type="number" id="car-end-odometer" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                                <label class="block text-xs text-slate-400 font-semibold mb-1">降車後メーター (km)</label>
+                                <input type="number" id="car-end-odometer" required placeholder="12550" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-400 font-semibold mb-1">目的地・用途詳細</label>
-                            <input type="text" id="car-destination" placeholder="〇〇現場、スーパーで買い物など" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                            <label class="block text-xs text-slate-400 font-semibold mb-1">目的地・詳細目的</label>
+                            <input type="text" id="car-destination" placeholder="札幌市北区現場、千歳映像ロケ地、プライベート" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
-
-                        <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/50">
-                            <label class="block text-xs text-slate-400 font-semibold mb-2">メーター等の写真 (任意)</label>
-                            <div class="flex items-center gap-3">
-                                <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg transition flex items-center gap-2">
-                                    📷 写真を撮る / 選ぶ
-                                    <input type="file" id="form-meter" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event, 'vehicle')">
-                                </label>
-                                <div id="vehicle-preview-container" class="hidden relative">
-                                    <img id="vehicle-preview" src="" class="h-10 w-10 object-cover rounded-lg border border-slate-500 cursor-pointer" onclick="openImageModal(this.src)">
-                                    <button type="button" onclick="clearImage('vehicle')" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px]">&times;</button>
-                                </div>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-1">メーター値や給油レシートなどの記録に。</p>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button type="button" id="vehicle-cancel-btn" onclick="cancelEdit('vehicle')" class="hidden w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl transition text-sm">キャンセル</button>
-                            <button type="submit" id="vehicle-submit-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">記録を保存</button>
-                        </div>
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">
+                            運行記録を保存する
+                        </button>
                     </form>
                 </div>
-                <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
-                    <h2 class="text-base font-bold text-white border-b border-slate-700 pb-3 mb-4">📋 運行運行記録簿</h2>
+
+                <!-- 車両運行ログ一覧 -->
+                <div class="glass-panel p-6 rounded-2xl lg:col-span-2 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                        <h2 class="text-base font-bold text-white">📋 車両運行記録簿 (家事按分エビデンス)</h2>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-300">
                             <thead class="text-xs text-slate-400 uppercase bg-slate-900/60">
                                 <tr>
-                                    <th class="px-4 py-3">日付・区分</th>
-                                    <th class="px-4 py-3">メーター始→終</th>
-                                    <th class="px-4 py-3">距離</th>
-                                    <th class="px-4 py-3">目的地</th>
-                                    <th class="px-4 py-3 text-center">画像</th>
+                                    <th class="px-4 py-3">日付</th>
+                                    <th class="px-4 py-3">運転者</th>
+                                    <th class="px-4 py-3">区分</th>
+                                    <th class="px-4 py-3">メーター始／終</th>
+                                    <th class="px-4 py-3">走行距離</th>
+                                    <th class="px-4 py-3">目的地・用途</th>
                                     <th class="px-4 py-3 text-center">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="vehicle-rows"></tbody>
                         </table>
+                    </div>
+                    <div id="empty-vehicle-state" class="hidden text-center py-12 text-slate-500">
+                        運行記録はありません。
+                    </div>
+                    <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-200 rounded-lg">
+                        🚗 **家事按分（車の経費化）の証明方法：**<br>
+                        税務署に対して「事業目的」と「個人目的」の走行距離の割合を正確に開示できれば、車両購入費（減価償却費）、自動車税、損害保険、充電代（電気代）、車検代の、この比率分の経費計上が法的に100%認められます。
                     </div>
                 </div>
             </div>
@@ -328,656 +504,842 @@
 
     </main>
 
-    <div id="image-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4" onclick="closeImageModal()">
-        <div class="relative max-w-3xl w-full h-auto max-h-screen flex items-center justify-center p-4">
-            <img id="modal-image" src="" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain">
-            <button class="absolute top-2 right-2 md:top-0 md:-right-10 text-white bg-slate-800 hover:bg-slate-700 rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-lg border border-slate-600 transition">&times;</button>
-        </div>
-    </div>
-
-    <div id="confirm-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-        <div class="glass-panel max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-700">
-            <h3 class="text-sm font-bold text-white">⚠️ 確認</h3>
-            <p id="confirm-message" class="text-xs text-slate-300"></p>
-            <div class="flex gap-2 justify-end">
-                <button onclick="closeCustomConfirm()" class="text-xs bg-slate-800 text-slate-300 px-4 py-2 rounded-xl">キャンセル</button>
-                <button id="confirm-btn-yes" class="text-xs bg-rose-500 text-white font-bold px-4 py-2 rounded-xl">実行する</button>
+    <!-- 未払給与支給実行モーダル -->
+    <div id="payment-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+        <div class="glass-panel max-w-md w-full rounded-2xl p-6 shadow-2xl relative">
+            <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">💵 未払給与の「実際の支給（口座振込）」</h3>
+            <p class="text-xs text-slate-400 mb-4">
+                事業口座から奥様の個人口座へ、溜まっている未払い金を支払った（振り込んだ）金額を記録します。（経費自体は既に未払計上されているため、二重に経費にはならず事業キャッシュの減少のみ記録されます）
+            </p>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-xs text-slate-400">現在の未払給与残高（プール総額）</p>
+                    <p id="modal-unpaid-pool" class="text-xl font-bold text-amber-400 mt-1">¥0</p>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 font-semibold mb-1">振込日</label>
+                    <input type="date" id="modal-payment-date" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 font-semibold mb-1">振込額 (円)</label>
+                    <input type="number" id="modal-payment-amount" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
+                </div>
+                <div class="flex gap-2 justify-end pt-2">
+                    <button onclick="closePaymentModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-2 rounded-xl transition">
+                        キャンセル
+                    </button>
+                    <button onclick="submitPaymentAccrual()" class="text-xs bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-emerald-500/20">
+                        支払（振込）を記録する
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="toast-container" class="fixed bottom-5 right-5 z-[70] space-y-2"></div>
+    <!-- カスタム確認（CONFIRM）ダイアログモーダル -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+        <div class="glass-panel max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-700">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                ⚠️ 確認が必要です
+            </h3>
+            <p id="confirm-message" class="text-xs text-slate-300 leading-relaxed"></p>
+            <div class="flex gap-2 justify-end">
+                <button onclick="handleConfirmNo()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl border border-slate-700">
+                    キャンセル
+                </button>
+                <button id="confirm-btn-yes" class="text-xs bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-rose-500/20">
+                    削除・実行する
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- トースト通知 -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
 
     <script>
+        // 勘定科目のリスト
         const categories = {
-            income: [ 
-                { id: "rev_video", name: "売上：映像・クリエイティブ" }, 
-                { id: "rev_const", name: "売上：建設PM・コンサル" }, 
+            income: [
+                { id: "rev_video", name: "売上：映像企画制作" },
+                { id: "rev_const", name: "売上：建設PM・コンサル" },
+                { id: "rev_import", name: "売上：輸出入販売業" },
                 { id: "rev_youtube", name: "売上：YouTube・メディア" },
-                { id: "rev_sales", name: "売上：物販・その他事業" },
-                { id: "rev_misc", name: "雑収入 (還付金など)" },
-                { id: "capital_in", name: "元入金 (個人資金の投入)" } 
+                { id: "rev_other", name: "売上：その他雑収入" },
+                { id: "capital_in", name: "元入金 (個人資金の投入)" }
             ],
-            expense: [ 
-                { id: "exp_salary_family", name: "専従者給与 (家族への給与)" }, 
-                { id: "exp_outsource", name: "外注工賃 (外部委託費)" },
-                { id: "exp_freight", name: "荷造運賃 (送料・梱包材)" },
-                { id: "exp_water_gas", name: "水道光熱費 (電気・水道・ガス)" },
-                { id: "exp_travel", name: "旅費交通費 (電車・航空券・宿泊等)" }, 
-                { id: "exp_comms", name: "通信費 (スマホ・ネット・サーバー等)" },
-                { id: "exp_ads", name: "広告宣伝費 (Web広告・名刺等)" },
-                { id: "exp_entertain", name: "接待交際費 (飲食・贈答品等)" },
-                { id: "exp_insurance", name: "損害保険料 (火災・自動車保険等)" },
-                { id: "exp_repair", name: "修繕費 (PC修理・店舗修繕等)" },
-                { id: "exp_supplies", name: "消耗品費 (10万未満の機材・備品等)" }, 
-                { id: "exp_depreciation", name: "減価償却費 (10万以上の固定資産)" },
-                { id: "exp_welfare", name: "福利厚生費 (スタッフの慰安等)" },
-                { id: "exp_salary", name: "給料賃金 (アルバイト・従業員給与)" },
-                { id: "exp_rent", name: "地代家賃 (家賃・駐車場代)" },
-                { id: "exp_tax", name: "租税公課 (事業用税金・印紙等)" },
-                { id: "exp_car", name: "車両関連費 (ガソリン・車検・洗車等)" }, 
-                { id: "exp_misc", name: "雑費 (その他少額な経費)" } 
+            expense: [
+                { id: "exp_salary", name: "専従者給与" },
+                { id: "exp_travel", name: "旅費交通費 (ラグジュアリー旅レビュー)" },
+                { id: "exp_comms", name: "通信費 (ネット・スマホ・サーバー)" },
+                { id: "exp_supplies", name: "消耗品費 (機材・ガジェット・ジム)" },
+                { id: "exp_rent", name: "地代家賃 (自宅オフィス按分)" },
+                { id: "exp_utility", name: "水道光熱費 (EV充電・電力等)" },
+                { id: "exp_car", name: "車両関連費 (ガソリン・EV等)" },
+                { id: "exp_misc", name: "雑費" }
             ],
-            "unpaid-accrual": [ { id: "unpaid_accrued_salary", name: "専従者給与（未払計上による経費化）" } ],
-            "unpaid-settlement": [ { id: "unpaid_paid_salary", name: "未払給与の支払（実際の口座振込）" } ]
+            "unpaid-accrual": [
+                { id: "unpaid_accrued_salary", name: "専従者給与（未払計上）" }
+            ],
+            "unpaid-settlement": [
+                { id: "unpaid_paid_salary", name: "未払専従者給与の支払（実際の口座振込）" }
+            ]
         };
 
-        let state = { transactions: [], timecard: [], vehicleLogs: [] };
-        let editingId = { ledger: null, timecard: null, vehicle: null };
-        let currentImages = { ledger: null, vehicle: null };
+        // アプリ全体のグローバルステート
+        let state = {
+            transactions: [],
+            timecard: [],
+            vehicleLogs: []
+        };
 
+        // 現在選択中の日付 (カレンダー連動用)
+        let selectedDate = "2026-05-01";
+        // カレンダーで現在表示中の年月
+        let calendarYear = 2026;
+        let calendarMonth = 5; // 5月
+
+        let currentConfirmAction = null;
+
+        // 初期ロード
         window.onload = function() {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const formattedDate = `${yyyy}-${mm}-${dd}`;
-            
-            document.getElementById('form-date').value = formattedDate;
-            document.getElementById('time-date').value = formattedDate;
-            document.getElementById('car-date').value = formattedDate;
-            
-            const filterEl = document.getElementById('filter-ledger-month');
-            if(filterEl.querySelector(`option[value="${today.getMonth() + 1}"]`)){
-                filterEl.value = today.getMonth() + 1;
-            }
+            // 初期登録日時の設定 (2026年5月1日)
+            const defaultDate = "2026-05-01";
+            setDateAll(defaultDate);
 
+            // ローカルストレージからのロード
             const savedState = localStorage.getItem('savvy_suite_state_v3');
             if (savedState) {
                 state = JSON.parse(savedState);
             } else {
-                loadDemoData(formattedDate);
+                loadDemoData(); // 初期表示用デモデータの挿入
             }
+
+            buildTimeDropdowns(); // 19:00〜23:00のドロップダウン生成（改善③・④）
             updateCategories();
             renderAll();
         };
 
+        // すべての日付入力欄を指定の日付に連動・設定
+        function setDateAll(dateString) {
+            selectedDate = dateString;
+            document.getElementById('form-date').value = dateString;
+            document.getElementById('time-date').value = dateString;
+            document.getElementById('car-date').value = dateString;
+            document.getElementById('modal-payment-date').value = dateString;
+        }
+
+        // 19:00 〜 23:00 の時間選択ドロップダウン生成 (改善④の追加修正)
+        function buildTimeDropdowns() {
+            const startSelect = document.getElementById('time-start');
+            const endSelect = document.getElementById('time-end');
+            
+            startSelect.innerHTML = '';
+            endSelect.innerHTML = '';
+
+            // 19:00 から 23:00 までの30分刻みの選択肢を作成
+            for (let hour = 19; hour <= 23; hour++) {
+                for (let min of ['00', '30']) {
+                    if (hour === 23 && min === '30') break; // 23:00がラスト
+                    
+                    const timeStr = `${String(hour).padStart(2, '0')}:${min}`;
+                    
+                    const optStart = document.createElement('option');
+                    optStart.value = timeStr;
+                    optStart.textContent = timeStr;
+                    if (timeStr === '19:00') optStart.selected = true; // デフォルト：19:00
+                    startSelect.appendChild(optStart);
+
+                    const optEnd = document.createElement('option');
+                    optEnd.value = timeStr;
+                    optEnd.textContent = timeStr;
+                    if (timeStr === '23:00') optEnd.selected = true; // デフォルト：23:00
+                    endSelect.appendChild(optEnd);
+                }
+            }
+        }
+
+        // アクティブタブ切り替え
         function switchTab(tabId) {
             ['ledger', 'timecard', 'vehicle'].forEach(t => {
                 document.getElementById(`sect-${t}`).classList.add('hidden');
-                document.getElementById(`tab-${t}`).className = "flex-1 md:flex-none text-xs px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-white";
+                document.getElementById(`tab-${t}`).className = "flex-1 md:flex-none text-xs px-4 py-2 rounded-lg font-medium transition duration-150 whitespace-nowrap text-slate-400 hover:text-white";
             });
+
             document.getElementById(`sect-${tabId}`).classList.remove('hidden');
-            document.getElementById(`tab-${tabId}`).className = "flex-1 md:flex-none text-xs px-4 py-2 rounded-lg font-medium bg-amber-500 text-slate-950";
+            document.getElementById(`tab-${tabId}`).className = "flex-1 md:flex-none text-xs px-4 py-2 rounded-lg font-medium transition duration-150 whitespace-nowrap bg-amber-500 text-slate-950";
         }
 
+        // 収支用の勘定科目の連動
         function updateCategories() {
             const type = document.getElementById('form-type').value;
-            const select = document.getElementById('form-category');
-            select.innerHTML = '';
+            const categorySelect = document.getElementById('form-category');
+            categorySelect.innerHTML = '';
             categories[type].forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat.id;
                 opt.textContent = cat.name;
-                select.appendChild(opt);
+                categorySelect.appendChild(opt);
             });
         }
 
-        function handleImageUpload(event, module) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 800;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                    } else {
-                        if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    currentImages[module] = dataUrl;
-                    document.getElementById(`${module}-preview`).src = dataUrl;
-                    document.getElementById(`${module}-preview-container`).classList.remove('hidden');
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function clearImage(module) {
-            currentImages[module] = null;
-            const inputId = module === 'ledger' ? 'form-receipt' : 'form-meter';
-            document.getElementById(inputId).value = '';
-            document.getElementById(`${module}-preview-container`).classList.add('hidden');
-        }
-
-        function openImageModal(src) {
-            document.getElementById('modal-image').src = src;
-            document.getElementById('image-modal').classList.remove('hidden');
-        }
-
-        function closeImageModal() {
-            document.getElementById('image-modal').classList.add('hidden');
-        }
-
-        function setEditMode(module, isEdit, title = "") {
-            const btnSubmit = document.getElementById(`${module}-submit-btn`);
-            const btnCancel = document.getElementById(`${module}-cancel-btn`);
-            const titleEl = document.getElementById(`${module}-form-title`);
-            const container = document.getElementById(`${module}-form-container`);
+        // カスタム確認ダイアログハンドラ
+        function showCustomConfirm(msg, yesCallback) {
+            document.getElementById('confirm-message').textContent = msg;
+            currentConfirmAction = yesCallback;
+            document.getElementById('confirm-modal').classList.remove('hidden');
             
-            if (isEdit) {
-                btnSubmit.textContent = "更新する";
-                btnSubmit.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl transition text-sm";
-                btnCancel.classList.remove('hidden');
-                titleEl.innerHTML = `✏️ ${title} (編集中)`;
-                titleEl.classList.replace('text-white', 'text-emerald-400');
-                container.classList.add('border', 'border-emerald-500/50', 'bg-emerald-950/20');
-                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                btnSubmit.textContent = "保存する";
-                btnSubmit.className = "w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm";
-                btnCancel.classList.add('hidden');
-                titleEl.innerHTML = module === 'ledger' ? '💰 収支登録' : (module === 'timecard' ? '⏱️ 勤務ログ登録' : '🚗 運行記録登録');
-                titleEl.classList.replace('text-emerald-400', 'text-white');
-                container.classList.remove('border', 'border-emerald-500/50', 'bg-emerald-950/20');
-                editingId[module] = null;
+            document.getElementById('confirm-btn-yes').onclick = function() {
+                if (currentConfirmAction) currentConfirmAction();
+                closeCustomConfirm();
+            };
+        }
+
+        function handleConfirmNo() {
+            closeCustomConfirm();
+        }
+
+        function closeCustomConfirm() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            currentConfirmAction = null;
+        }
+
+        // ==================== CALENDAR GENERATION (月曜スタート) ====================
+        function changeCalendarMonth(offset) {
+            calendarMonth += offset;
+            if (calendarMonth > 12) {
+                calendarMonth = 1;
+                calendarYear += 1;
+            } else if (calendarMonth < 1) {
+                calendarMonth = 12;
+                calendarYear -= 1;
+            }
+            renderCalendar();
+        }
+
+        function selectCalendarDate(dateString) {
+            setDateAll(dateString);
+            renderCalendar();
+            showToast(`${dateString} が選択されました。`);
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('calendar-days-container');
+            container.innerHTML = '';
+
+            document.getElementById('calendar-month-label').textContent = `${calendarYear}年 ${calendarMonth}月`;
+
+            // その月の初日の曜日 (0:日, 1:月, 2:火...) と総日数
+            const firstDayDate = new Date(calendarYear, calendarMonth - 1, 1);
+            let firstDayOfWeek = firstDayDate.getDay(); // 日曜スタート基準 (0〜6)
+            
+            // 月曜始まりに並び替えるための変換 (月:0, 火:1, 水:2, 木:3, 金:4, 土:5, 日:6)
+            let mondayStartOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+            const totalDays = new Date(calendarYear, calendarMonth, 0).getDate();
+
+            // 前月分を空白（または薄いグレー）で埋める
+            for (let i = 0; i < mondayStartOffset; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "py-3 text-slate-700 bg-slate-900/10 rounded select-none";
+                emptyCell.textContent = "";
+                container.appendChild(emptyCell);
+            }
+
+            // 当月の日付
+            for (let day = 1; day <= totalDays; day++) {
+                const dayString = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const dayCell = document.createElement('button');
+                dayCell.type = "button";
+                dayCell.onclick = () => selectCalendarDate(dayString);
+                
+                // 基本のクラス
+                let baseClass = "py-2.5 relative flex flex-col items-center justify-between rounded transition duration-150 hover:bg-slate-800 ";
+                
+                // 選択中かどうかの判定
+                if (dayString === selectedDate) {
+                    baseClass += "bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20";
+                } else {
+                    baseClass += "bg-slate-800/40 text-slate-300";
+                }
+
+                // 今日(2026年5月30日の場合など)の目印
+                const isToday = (calendarYear === 2026 && calendarMonth === 5 && day === 30);
+                let borderClass = isToday ? " border border-amber-500/40" : "";
+
+                dayCell.className = baseClass + borderClass;
+
+                // 日付テキスト
+                const numSpan = document.createElement('span');
+                numSpan.textContent = day;
+                dayCell.appendChild(numSpan);
+
+                // 各種ログの有無をマッピングするインジケータードット
+                const indicatorContainer = document.createElement('div');
+                indicatorContainer.className = "flex gap-0.5 justify-center mt-1 w-full h-1";
+
+                // マサミ様稼働
+                const hasMasami = state.timecard.some(t => t.date === dayString && t.member === "マサミ");
+                if (hasMasami) {
+                    const dot = document.createElement('span');
+                    dot.className = "w-1.5 h-1 rounded-full bg-emerald-400";
+                    indicatorContainer.appendChild(dot);
+                }
+
+                // ミキ様稼働
+                const hasMiki = state.timecard.some(t => t.date === dayString && t.member === "ミキ");
+                if (hasMiki) {
+                    const dot = document.createElement('span');
+                    dot.className = "w-1.5 h-1 rounded-full bg-amber-400";
+                    indicatorContainer.appendChild(dot);
+                }
+
+                // 車両運行
+                const hasVehicle = state.vehicleLogs.some(v => v.date === dayString);
+                if (hasVehicle) {
+                    const dot = document.createElement('span');
+                    dot.className = "w-1.5 h-1 rounded-full bg-sky-400";
+                    indicatorContainer.appendChild(dot);
+                }
+
+                dayCell.appendChild(indicatorContainer);
+                container.appendChild(dayCell);
             }
         }
 
-        function cancelEdit(module) {
-            setEditMode(module, false);
-            if (module === 'ledger') {
-                document.getElementById('ledger-form').reset();
-                updateCategories();
-                clearImage('ledger');
-            } else if (module === 'timecard') {
-                document.getElementById('timecard-form').reset();
-            } else if (module === 'vehicle') {
-                document.getElementById('vehicle-form').reset();
-                clearImage('vehicle');
-            }
-        }
 
-        // ================= 取引 (LEDGER) =================
-        function saveTransaction(e) {
+        // ==================== CONTROLLER: LEDGER (収支管理) ====================
+        function addTransaction(e) {
             e.preventDefault();
             const date = document.getElementById('form-date').value;
             const type = document.getElementById('form-type').value;
             const categoryId = document.getElementById('form-category').value;
             const amount = parseInt(document.getElementById('form-amount').value);
             const memo = document.getElementById('form-memo').value || "-";
-            const catName = categories[type].find(c => c.id === categoryId)?.name || "その他";
 
-            const txData = {
-                id: editingId.ledger || 'tx_' + Date.now(),
-                date, type, categoryId, categoryName: catName, amount, memo,
-                image: currentImages.ledger
+            const categoryName = getCategoryName(type, categoryId);
+
+            const tx = {
+                id: 'tx_' + Date.now(),
+                date: date,
+                type: type,
+                categoryId: categoryId,
+                categoryName: categoryName,
+                amount: amount,
+                memo: memo
             };
 
-            if (editingId.ledger) {
-                const idx = state.transactions.findIndex(t => t.id === editingId.ledger);
-                if (idx !== -1) state.transactions[idx] = txData;
-                showToast("収支を更新しました");
-            } else {
-                state.transactions.unshift(txData);
-                showToast("収支を登録しました");
-            }
-
+            state.transactions.unshift(tx);
             saveState();
             renderAll();
-            cancelEdit('ledger');
-        }
-
-        function editTransaction(id) {
-            const tx = state.transactions.find(t => t.id === id);
-            if (!tx) return;
             
-            editingId.ledger = id;
-            document.getElementById('form-date').value = tx.date;
-            document.getElementById('form-type').value = tx.type;
-            updateCategories();
-            document.getElementById('form-category').value = tx.categoryId;
-            document.getElementById('form-amount').value = tx.amount;
-            document.getElementById('form-memo').value = tx.memo;
-
-            const imgData = tx.image || tx.receiptImage;
-            if (imgData) {
-                currentImages.ledger = imgData;
-                document.getElementById('ledger-preview').src = imgData;
-                document.getElementById('ledger-preview-container').classList.remove('hidden');
-            } else {
-                clearImage('ledger');
-            }
-            setEditMode('ledger', true, '収支を編集');
+            document.getElementById('form-amount').value = '';
+            document.getElementById('form-memo').value = '';
+            showToast("収支取引を登録しました。");
         }
 
-        // ================= 勤務 (TIMECARD) =================
-        function saveTimeRecord(e) {
-            e.preventDefault();
-            const data = {
-                id: editingId.timecard || 'tm_' + Date.now(),
-                date: document.getElementById('time-date').value,
-                member: document.getElementById('time-member').value,
-                start: document.getElementById('time-start').value,
-                end: document.getElementById('time-end').value,
-                breakMin: parseInt(document.getElementById('time-break').value),
-                memo: document.getElementById('time-memo').value,
-                attendees: document.getElementById('time-attendees').value || "-",
-                meetingDuration: document.getElementById('time-meeting-duration').value || "0"
+        function quickActionSalary(amount) {
+            const tx = {
+                id: 'tx_' + Date.now(),
+                date: selectedDate, // 選択中のカレンダー日付に自動追従
+                type: "unpaid-accrual",
+                categoryId: "unpaid_accrued_salary",
+                categoryName: "専従者給与（未払計上）",
+                amount: amount,
+                memo: amount === 200000 ? "ミキ様5月度給与（上限節税枠・未払計上）" : "ミキ様5月度給与（無税枠内・未払計上）"
             };
-            
-            const [sh, sm] = data.start.split(':').map(Number);
-            const [eh, em] = data.end.split(':').map(Number);
-            let mins = (eh * 60 + em) - (sh * 60 + sm) - data.breakMin;
-            data.hours = parseFloat(Math.max(0, mins / 60).toFixed(1));
 
-            if (editingId.timecard) {
-                const idx = state.timecard.findIndex(t => t.id === editingId.timecard);
-                if (idx !== -1) state.timecard[idx] = data;
-                showToast("勤務ログを更新しました");
-            } else {
-                state.timecard.unshift(data);
-                showToast("勤務ログを登録しました");
-            }
-
+            state.transactions.unshift(tx);
             saveState();
             renderAll();
-            cancelEdit('timecard');
+            showToast("専従者給与を未払経費として計上しました！");
         }
 
-        function editTimeRecord(id) {
-            const t = state.timecard.find(x => x.id === id);
-            if(!t) return;
-            editingId.timecard = id;
-            document.getElementById('time-date').value = t.date;
-            document.getElementById('time-member').value = t.member;
-            document.getElementById('time-start').value = t.start;
-            document.getElementById('time-end').value = t.end;
-            document.getElementById('time-break').value = t.breakMin;
-            document.getElementById('time-memo').value = t.memo;
-            document.getElementById('time-attendees').value = t.attendees === "-" ? "" : t.attendees;
-            document.getElementById('time-meeting-duration').value = t.meetingDuration === "0" ? "" : t.meetingDuration;
-            setEditMode('timecard', true, '勤務ログを編集');
+        function calculateUnpaidPool() {
+            let accruals = 0;
+            let settlements = 0;
+            state.transactions.forEach(t => {
+                if (t.type === "unpaid-accrual") accruals += t.amount;
+                if (t.type === "unpaid-settlement") settlements += t.amount;
+            });
+            return accruals - settlements;
         }
 
-        // 【新機能】Googleカレンダーに簡易連携するインテント機能
-        function addToGoogleCalendar(id) {
-            const t = state.timecard.find(x => x.id === id);
-            if (!t) return;
-            
-            const baseDate = t.date.replace(/-/g, ''); // YYYYMMDD
-            const startTime = t.start.replace(':', '') + '00'; // HHMMSS
-            const endTime = t.end.replace(':', '') + '00'; // HHMMSS
-            
-            const title = encodeURIComponent(`【業務ログ】${t.member}：${t.memo}`);
-            let details = `■業務メモ: ${t.memo}\n■実働時間: ${t.hours}時間 (休憩 ${t.breakMin}分)`;
-            if (t.meetingDuration && t.meetingDuration !== "0") {
-                details += `\n■打ち合わせ参加者: ${t.attendees}\n■打ち合わせ時間: ${t.meetingDuration}分`;
-            }
-            const encodedDetails = encodeURIComponent(details);
-            
-            const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${baseDate}T${startTime}/${baseDate}T${endTime}&details=${encodedDetails}&sf=true&output=xml`;
-            window.open(url, '_blank');
+        function openPaymentModal() {
+            const pool = calculateUnpaidPool();
+            document.getElementById('modal-unpaid-pool').textContent = `¥${pool.toLocaleString()}`;
+            document.getElementById('modal-payment-amount').value = pool;
+            document.getElementById('payment-modal').classList.remove('hidden');
         }
 
-        // ================= 車両 (VEHICLE) =================
-        function saveVehicleLog(e) {
-            e.preventDefault();
-            const sOdo = parseInt(document.getElementById('car-start-odometer').value);
-            const eOdo = parseInt(document.getElementById('car-end-odometer').value);
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        function submitPaymentAccrual() {
+            const date = document.getElementById('modal-payment-date').value;
+            const amount = parseInt(document.getElementById('modal-payment-amount').value);
             
-            if (eOdo <= sOdo) {
-                showToast("降車後メーターは乗車前より大きくしてください", "error");
+            if (!amount || amount <= 0) {
+                showToast("正しい金額を入力してください。", "error");
                 return;
             }
 
-            const data = {
-                id: editingId.vehicle || 'car_' + Date.now(),
-                date: document.getElementById('car-date').value,
-                purposeType: document.getElementById('car-purpose-type').value,
-                startOdo: sOdo,
-                endOdo: eOdo,
-                distance: eOdo - sOdo,
-                destination: document.getElementById('car-destination').value,
-                image: currentImages.vehicle
+            const tx = {
+                id: 'tx_' + Date.now(),
+                date: date,
+                type: "unpaid-settlement",
+                categoryId: "unpaid_paid_salary",
+                categoryName: "未払専従者給与の支払（実際の口座振込）",
+                amount: amount,
+                memo: "ミキ様への未払給与の実際の銀行振込（事業資金の減少）"
             };
 
-            if (editingId.vehicle) {
-                const idx = state.vehicleLogs.findIndex(t => t.id === editingId.vehicle);
-                if (idx !== -1) state.vehicleLogs[idx] = data;
-                showToast("運行記録を更新しました");
-            } else {
-                state.vehicleLogs.unshift(data);
-                document.getElementById('car-start-odometer').value = eOdo;
-                document.getElementById('car-end-odometer').value = '';
-                document.getElementById('car-destination').value = '';
-                showToast("運行記録を登録しました");
-            }
-
+            state.transactions.unshift(tx);
             saveState();
             renderAll();
-            cancelEdit('vehicle');
+            closePaymentModal();
+            showToast("未払給与の振込支給実績を記録しました！");
         }
 
-        function editVehicleLog(id) {
-            const v = state.vehicleLogs.find(x => x.id === id);
-            if(!v) return;
-            editingId.vehicle = id;
-            document.getElementById('car-date').value = v.date;
-            document.getElementById('car-purpose-type').value = v.purposeType;
-            document.getElementById('car-start-odometer').value = v.startOdo;
-            document.getElementById('car-end-odometer').value = v.endOdo;
-            document.getElementById('car-destination').value = v.destination;
-            
-            if (v.image) {
-                currentImages.vehicle = v.image;
-                document.getElementById('vehicle-preview').src = v.image;
-                document.getElementById('vehicle-preview-container').classList.remove('hidden');
-            } else {
-                clearImage('vehicle');
-            }
-            setEditMode('vehicle', true, '運行記録を編集');
-        }
-
-        // ================= 削除 & UI描画 =================
-        function askDelete(type, id) {
-            document.getElementById('confirm-message').textContent = "この記録を完全に削除してもよろしいですか？";
-            document.getElementById('confirm-modal').classList.remove('hidden');
-            document.getElementById('confirm-btn-yes').onclick = () => {
-                if(type === 'ledger') state.transactions = state.transactions.filter(x => x.id !== id);
-                if(type === 'timecard') state.timecard = state.timecard.filter(x => x.id !== id);
-                if(type === 'vehicle') state.vehicleLogs = state.vehicleLogs.filter(x => x.id !== id);
+        function deleteTransaction(id) {
+            showCustomConfirm("この取引記録を削除してもよろしいですか？", function() {
+                state.transactions = state.transactions.filter(t => t.id !== id);
                 saveState();
                 renderAll();
-                closeCustomConfirm();
-                showToast("削除しました");
+                showToast("取引を削除しました。");
+            });
+        }
+
+        function getCategoryName(type, id) {
+            const match = categories[type].find(c => c.id === id);
+            return match ? match.name : "その他";
+        }
+
+
+        // ==================== CONTROLLER: TIMECARD (出勤簿) ====================
+        function addTimeRecord(e) {
+            e.preventDefault();
+            const date = document.getElementById('time-date').value;
+            const member = document.getElementById('time-member').value;
+            const start = document.getElementById('time-start').value;
+            const end = document.getElementById('time-end').value;
+            const breakMin = parseInt(document.getElementById('time-break').value); // デフォルト 0
+            const category = document.getElementById('time-category').value;
+            const memo = document.getElementById('time-memo').value;
+
+            // 実働時間の計算
+            const startMinutes = timeToMinutes(start);
+            const endMinutes = timeToMinutes(end);
+            let diffMinutes = endMinutes - startMinutes - breakMin;
+            if (diffMinutes < 0) diffMinutes = 0;
+            const hours = (diffMinutes / 60).toFixed(1);
+
+            const record = {
+                id: 'time_' + Date.now(),
+                date: date,
+                member: member,
+                start: start,
+                end: end,
+                breakMin: breakMin,
+                hours: parseFloat(hours),
+                category: category,
+                memo: memo
             };
+
+            state.timecard.unshift(record);
+            saveState();
+            renderAll();
+
+            document.getElementById('time-memo').value = '';
+            showToast(`${member}様の勤務記録を追加しました。`);
         }
-        function closeCustomConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
 
-        function renderAll() {
-            // Ledger
-            let totalRev = 0, totalExp = 0, unpaid = 0;
-            const lTbody = document.getElementById('transaction-rows');
-            lTbody.innerHTML = '';
-            
-            const filterM = document.getElementById('filter-ledger-month').value;
-            let filteredL = state.transactions;
-            if(filterM !== 'all') filteredL = filteredL.filter(t => new Date(t.date).getMonth()+1 == filterM);
-
-            filteredL.forEach(t => {
-                if (t.type === "income") totalRev += t.amount;
-                else if (t.type === "expense" || t.type === "unpaid-accrual") totalExp += t.amount;
-                
-                if (t.type === "unpaid-accrual") unpaid += t.amount;
-                if (t.type === "unpaid-settlement") unpaid -= t.amount;
-
-                const b = t.type === 'income' ? 'text-emerald-400' : 'text-rose-400';
-                const imgData = t.image || t.receiptImage;
-                let imgHtml = '-';
-                if (imgData) {
-                    imgHtml = `<button onclick="openImageModal('${imgData}')" class="text-xl hover:scale-110 transition drop-shadow-md" title="画像を見る">🖼️</button>`;
-                }
-
-                lTbody.innerHTML += `
-                    <tr class="border-b border-slate-800 hover:bg-slate-800/40 text-xs">
-                        <td class="px-4 py-3 text-slate-400">${t.date}</td>
-                        <td class="px-4 py-3">${t.type.includes('income') ? '収入' : '経費'}</td>
-                        <td class="px-4 py-3 text-white">
-                            <span class="block font-medium">${t.categoryName}</span>
-                            <span class="block text-slate-400 text-[10px] truncate max-w-[150px]">${t.memo}</span>
-                        </td>
-                        <td class="px-4 py-3 ${b} font-bold">¥${t.amount.toLocaleString()}</td>
-                        <td class="px-4 py-3 text-center">${imgHtml}</td>
-                        <td class="px-4 py-3 flex gap-1 justify-center">
-                            <button onclick="editTransaction('${t.id}')" class="bg-slate-700 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">編集</button>
-                            <button onclick="askDelete('ledger','${t.id}')" class="bg-slate-800 hover:bg-rose-600 text-slate-300 px-2 py-1 rounded transition">削除</button>
-                        </td>
-                    </tr>`;
-            });
-            document.getElementById('empty-ledger-state').className = filteredL.length ? 'hidden' : 'text-center py-12 text-slate-500';
-            
-            document.getElementById('stat-total-revenue').textContent = `¥${totalRev.toLocaleString()}`;
-            document.getElementById('stat-total-expense').textContent = `¥${totalExp.toLocaleString()}`;
-            document.getElementById('stat-net-income').textContent = `¥${(totalRev - totalExp).toLocaleString()}`;
-            document.getElementById('stat-unpaid-salary').textContent = `¥${unpaid.toLocaleString()}`;
-
-            // Timecard
-            const tTbody = document.getElementById('timecard-rows');
-            tTbody.innerHTML = '';
-            state.timecard.forEach(t => {
-                let meetingHtml = '';
-                if(t.meetingDuration && t.meetingDuration !== "0") {
-                    meetingHtml = `<span class="block text-[10px] text-amber-400 mt-0.5 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded w-fit">👥 打ち合わせ: ${t.attendees} (${t.meetingDuration}分)</span>`;
-                }
-
-                tTbody.innerHTML += `
-                    <tr class="border-b border-slate-800 hover:bg-slate-800/40 text-xs">
-                        <td class="px-4 py-3"><span class="text-slate-400 block">${t.date}</span><span class="font-bold text-white">${t.member}</span></td>
-                        <td class="px-4 py-3"><span class="block text-slate-400">${t.start}-${t.end}</span><span class="text-amber-400 font-bold">${t.hours}h</span></td>
-                        <td class="px-4 py-3 text-slate-300">
-                            <span class="block">${t.memo}</span>
-                            ${meetingHtml}
-                        </td>
-                        <td class="px-4 py-3 flex gap-1 justify-center items-center">
-                            <button onclick="addToGoogleCalendar('${t.id}')" class="bg-slate-800 hover:bg-blue-600 border border-slate-700 text-white px-2 py-1 rounded transition" title="Googleカレンダーに送る">📅</button>
-                            <button onclick="editTimeRecord('${t.id}')" class="bg-slate-700 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">編集</button>
-                            <button onclick="askDelete('timecard','${t.id}')" class="bg-slate-800 hover:bg-rose-600 text-slate-300 px-2 py-1 rounded transition">削除</button>
-                        </td>
-                    </tr>`;
-            });
-
-            // Vehicle
-            const vTbody = document.getElementById('vehicle-rows');
-            vTbody.innerHTML = '';
-            state.vehicleLogs.forEach(v => {
-                let imgHtml = '-';
-                if (v.image) {
-                    imgHtml = `<button onclick="openImageModal('${v.image}')" class="text-xl hover:scale-110 transition drop-shadow-md" title="画像を見る">🖼️</button>`;
-                }
-
-                vTbody.innerHTML += `
-                    <tr class="border-b border-slate-800 hover:bg-slate-800/40 text-xs">
-                        <td class="px-4 py-3"><span class="text-slate-400 block">${v.date}</span><span class="${v.purposeType==='business'?'text-emerald-400':'text-slate-400'}">${v.purposeType==='business'?'事業':'私用'}</span></td>
-                        <td class="px-4 py-3 text-slate-400 text-[10px]">${v.startOdo}→${v.endOdo}</td>
-                        <td class="px-4 py-3 font-bold text-white">${v.distance}km</td>
-                        <td class="px-4 py-3 text-slate-300 truncate max-w-[120px]">${v.destination}</td>
-                        <td class="px-4 py-3 text-center">${imgHtml}</td>
-                        <td class="px-4 py-3 flex gap-1 justify-center">
-                            <button onclick="editVehicleLog('${v.id}')" class="bg-slate-700 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">編集</button>
-                            <button onclick="askDelete('vehicle','${v.id}')" class="bg-slate-800 hover:bg-rose-600 text-slate-300 px-2 py-1 rounded transition">削除</button>
-                        </td>
-                    </tr>`;
+        function deleteTimeRecord(id) {
+            showCustomConfirm("この勤務記録を削除してもよろしいですか？", function() {
+                state.timecard = state.timecard.filter(t => t.id !== id);
+                saveState();
+                renderAll();
+                showToast("勤務記録を削除しました。");
             });
         }
 
-        // 【新機能】月ごとのまとめ・添付写真の一括PDF・印刷用アウトプット機能
-        function exportMonthlyReport() {
-            const selectedMonth = document.getElementById('filter-ledger-month').value;
-            if (selectedMonth === 'all') {
-                alert('月別レポートを出力するには、右側のドロップダウンで特定の月（1月〜12月）を選択してください。');
+        function timeToMinutes(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        // メモ表示のトグル関数（切り詰め5文字 ↔ フルテキスト）（改善要望②）
+        function toggleMemoDisplay(element) {
+            const shortSpan = element.querySelector('.memo-short');
+            const fullSpan = element.querySelector('.memo-full');
+            
+            if (shortSpan && fullSpan) {
+                if (shortSpan.classList.contains('hidden')) {
+                    shortSpan.classList.remove('hidden');
+                    fullSpan.classList.add('hidden');
+                } else {
+                    shortSpan.classList.add('hidden');
+                    fullSpan.classList.remove('hidden');
+                }
+            }
+        }
+
+
+        // ==================== CONTROLLER: VEHICLE (車両運行記録) ====================
+        function addVehicleLog(e) {
+            e.preventDefault();
+            const date = document.getElementById('car-date').value;
+            const driver = document.getElementById('car-driver').value;
+            const purposeType = document.getElementById('car-purpose-type').value;
+            const startOdo = parseInt(document.getElementById('car-start-odometer').value);
+            const endOdo = parseInt(document.getElementById('car-end-odometer').value);
+            const destination = document.getElementById('car-destination').value;
+
+            const distance = endOdo - startOdo;
+            if (distance <= 0) {
+                showToast("降車後メーターは乗車前メーターより大きい数値を入力してください。", "error");
                 return;
             }
-            
-            const currentYear = new Date().getFullYear();
-            const filteredTx = state.transactions.filter(t => new Date(t.date).getMonth() + 1 == selectedMonth);
-            const filteredTime = state.timecard.filter(t => new Date(t.date).getMonth() + 1 == selectedMonth);
-            const filteredVehicle = state.vehicleLogs.filter(v => new Date(v.date).getMonth() + 1 == selectedMonth);
-            
-            let reportWindow = window.open('', '_blank');
-            let txRows = '';
-            let totalRev = 0, totalExp = 0, unpaid = 0;
-            let imagesHtml = '<h2>📸 添付エビデンス（領収書・メーター写真等）一覧</h2><div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">';
-            let hasImages = false;
 
-            filteredTx.forEach(t => {
-                if (t.type === "income") totalRev += t.amount;
-                else if (t.type === "expense" || t.type === "unpaid-accrual") totalExp += t.amount;
-                if (t.type === "unpaid-accrual") unpaid += t.amount;
-                if (t.type === "unpaid-settlement") unpaid -= t.amount;
+            const log = {
+                id: 'car_' + Date.now(),
+                date: date,
+                driver: driver,
+                purposeType: purposeType,
+                startOdo: startOdo,
+                endOdo: endOdo,
+                distance: distance,
+                destination: destination
+            };
 
-                const imgData = t.image || t.receiptImage;
-                let imgStatus = '-';
-                if (imgData) {
-                    hasImages = true;
-                    imgStatus = 'あり (巻末に添付)';
-                    imagesHtml += `
-                        <div style="border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; text-align: center; background: #f8fafc;">
-                            <p style="font-size: 11px; margin: 0 0 6px 0; font-weight: bold; color:#475569;">【収支】${t.date} / ${t.categoryName} (¥${t.amount.toLocaleString()})</p>
-                            <img src="${imgData}" style="max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 4px;" />
-                        </div>`;
+            state.vehicleLogs.unshift(log);
+            saveState();
+            renderAll();
+
+            // 次回入力用に自動メーター引継ぎ
+            document.getElementById('car-start-odometer').value = endOdo;
+            document.getElementById('car-end-odometer').value = '';
+            document.getElementById('car-destination').value = '';
+            showToast("車両運行記録を保存しました。");
+        }
+
+        function deleteVehicleLog(id) {
+            showCustomConfirm("この運行記録を削除してもよろしいですか？", function() {
+                state.vehicleLogs = state.vehicleLogs.filter(v => v.id !== id);
+                saveState();
+                renderAll();
+                showToast("運行記録を削除しました。");
+            });
+        }
+
+
+        // ==================== RENDERING & COMPUTATIONS ====================
+        function renderAll() {
+            // --- 1. カレンダーの描画 (月曜スタート) ---
+            renderCalendar();
+
+            // --- 2. 収支側の集計 & 描画 ---
+            const filterLedgerMonth = document.getElementById('filter-ledger-month').value;
+            let filteredLedger = [...state.transactions];
+            if (filterLedgerMonth !== "all") {
+                filteredLedger = filteredLedger.filter(t => new Date(t.date).getMonth() + 1 === parseInt(filterLedgerMonth));
+            }
+
+            let totalRev = 0, totalExp = 0, revCount = 0, expCount = 0;
+            state.transactions.forEach(t => {
+                if (t.type === "income" && t.categoryId !== "capital_in") {
+                    totalRev += t.amount;
+                    revCount++;
+                } else if (t.type === "expense" || t.type === "unpaid-accrual") {
+                    totalExp += t.amount;
+                    expCount++;
                 }
-
-                txRows += `<tr><td>${t.date}</td><td>${t.type === 'income' ? '収入' : '経費'}</td><td><b>${t.categoryName}</b><br><small style="color:#64748b">${t.memo}</small></td><td style="text-align: right; font-weight: bold;">¥${t.amount.toLocaleString()}</td><td style="text-align: center;">${imgStatus}</td></tr>`;
             });
 
-            let timeRows = '';
-            filteredTime.forEach(t => {
-                timeRows += `<tr><td>${t.date}</td><td><b>${t.member}</b></td><td>${t.start} 〜 ${t.end} (${t.hours}h)</td><td>${t.memo}${ (t.meetingDuration && t.meetingDuration !== "0") ? `<br><small style="color:#b45309; font-weight:bold;">👥 打ち合わせ: ${t.attendees} (${t.meetingDuration}分)</small>` : '' }</td></tr>`;
-            });
+            document.getElementById('stat-total-revenue').textContent = `¥${totalRev.toLocaleString()}`;
+            document.getElementById('stat-total-expense').textContent = `¥${totalExp.toLocaleString()}`;
+            document.getElementById('stat-revenue-count').textContent = `${revCount} 件`;
+            document.getElementById('stat-expense-count').textContent = `${expCount} 件`;
 
-            let vehicleRows = '';
-            filteredVehicle.forEach(v => {
-                const imgData = v.image;
-                let imgStatus = '-';
-                if (imgData) {
-                    hasImages = true;
-                    imgStatus = 'あり (巻末に添付)';
-                    imagesHtml += `
-                        <div style="border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; text-align: center; background: #f8fafc;">
-                            <p style="font-size: 11px; margin: 0 0 6px 0; font-weight: bold; color:#475569;">【運行】${v.date} / ${v.destination} (${v.distance}km)</p>
-                            <img src="${imgData}" style="max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 4px;" />
-                        </div>`;
+            const netInc = totalRev - totalExp;
+            const netEl = document.getElementById('stat-net-income');
+            netEl.textContent = `¥${netInc.toLocaleString()}`;
+            netEl.className = netInc >= 0 ? "text-2xl font-bold mt-2 text-emerald-400" : "text-2xl font-bold mt-2 text-rose-400";
+            document.getElementById('stat-unpaid-salary').textContent = `¥${calculateUnpaidPool().toLocaleString()}`;
+
+            // 収支履歴一覧
+            const ledgerTbody = document.getElementById('transaction-rows');
+            const ledgerEmpty = document.getElementById('empty-ledger-state');
+            ledgerTbody.innerHTML = '';
+            if (filteredLedger.length === 0) {
+                ledgerEmpty.classList.remove('hidden');
+            } else {
+                ledgerEmpty.classList.add('hidden');
+                filteredLedger.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition text-xs";
+                    const badge = t.type === "income" ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">収入</span>` : (t.type === "expense" ? `<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-full">一般経費</span>` : (t.type === "unpaid-accrual" ? `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">未払専従者給与</span>` : `<span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-0.5 rounded-full">未払給与振込</span>`));
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 text-slate-400">${t.date}</td>
+                        <td class="px-4 py-3">${badge}</td>
+                        <td class="px-4 py-3 text-white font-medium">${t.categoryName}</td>
+                        <td class="px-4 py-3 ${t.type === 'income' ? 'text-emerald-400 font-bold' : 'text-slate-300'}">¥${t.amount.toLocaleString()}</td>
+                        <td class="px-4 py-3 text-slate-400 max-w-xs truncate">${t.memo}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 hover:bg-rose-500/10 px-2 py-1 rounded">削除</button>
+                        </td>
+                    `;
+                    ledgerTbody.appendChild(tr);
+                });
+            }
+
+            // --- 3. 出勤簿側の集計 & 描画 ---
+            const filterTimeMember = document.getElementById('filter-time-member').value;
+            let filteredTime = [...state.timecard];
+            if (filterTimeMember !== "all") {
+                filteredTime = filteredTime.filter(t => t.member === filterTimeMember);
+            }
+
+            let mikiDays = 0, mikiHours = 0, masamiDays = 0;
+            const seenDatesMiki = new Set();
+            const seenDatesMasami = new Set();
+
+            state.timecard.forEach(t => {
+                if (t.member === "ミキ") {
+                    seenDatesMiki.add(t.date);
+                    mikiHours += t.hours;
+                } else if (t.member === "マサミ") {
+                    seenDatesMasami.add(t.date);
                 }
-                vehicleRows += `<tr><td>${v.date}</td><td>${v.purposeType === 'business' ? '事業用' : '私用'}</td><td>${v.startOdo} → ${v.endOdo} (<b>${v.distance}km</b>)</td><td>${v.destination}</td><td style="text-align: center;">${imgStatus}</td></tr>`;
             });
+            document.getElementById('stat-miki-days').textContent = `${seenDatesMiki.size} 日`;
+            document.getElementById('stat-miki-hours').textContent = `${mikiHours.toFixed(1)} 時間`;
+            document.getElementById('stat-masami-days').textContent = `${seenDatesMasami.size} 日`;
 
-            imagesHtml += '</div>';
-            if (!hasImages) imagesHtml = '<h2>📸 添付エビデンス一覧</h2><p style="color: #64748b; font-size:13px;">この月に添付された画像はありません。</p>';
-
-            const htmlContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>${currentYear}年${selectedMonth}月度 事業経費・活動報告書</title>
-                    <style>
-                        body { font-family: system-ui, sans-serif; color: #1e293b; line-height: 1.5; padding: 30px; background:#fff; }
-                        h1 { border-b: 3px solid #0f172a; padding-bottom: 8px; font-size: 22px; margin-top:0; }
-                        h2 { font-size: 15px; margin-top: 35px; border-left: 5px solid #d97706; padding-left: 10px; color:#0f172a; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-                        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
-                        th { background-color: #f1f5f9; color:#334155; }
-                        .summary-box { display: flex; gap: 15px; margin-top: 20px; }
-                        .card { border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; flex: 1; background: #f8fafc; }
-                        .card p { margin: 0; font-size: 11px; color: #64748b; font-weight:bold; }
-                        .card h3 { margin: 4px 0 0 0; font-size: 18px; color:#0f172a; }
-                        @media print {
-                            button { display: none; }
-                            body { padding: 0; }
-                            .page-break { page-break-before: always; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div style="text-align: right; margin-bottom:15px;"><button onclick="window.print()" style="padding: 8px 16px; background: #d97706; color:white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size:12px;">🖨️ PDF保存・印刷する</button></div>
-                    <h1>Savvy 事業活動明細報告書 (${currentYear}年 ${selectedMonth}月度)</h1>
+            const timecardTbody = document.getElementById('timecard-rows');
+            const timecardEmpty = document.getElementById('empty-timecard-state');
+            timecardTbody.innerHTML = '';
+            if (filteredTime.length === 0) {
+                timecardEmpty.classList.remove('hidden');
+            } else {
+                timecardEmpty.classList.add('hidden');
+                filteredTime.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition text-xs";
                     
-                    <div class="summary-box">
-                        <div class="card"><p>総売上</p><h3>¥${totalRev.toLocaleString()}</h3></div>
-                        <div class="card"><p>総必要経費</p><h3>¥${totalExp.toLocaleString()}</h3></div>
-                        <div class="card"><p>差引事業所得</p><h3>¥${(totalRev - totalExp).toLocaleString()}</h3></div>
-                        <div class="card"><p>専従者未払給与残高</p><h3>¥${unpaid.toLocaleString()}</h3></div>
+                    // 改善要望②：メモは5文字まで表示して、残りはトグルで表示（元の文章は内部で保持）
+                    const shortMemo = t.memo.length > 5 ? t.memo.slice(0, 5) + "..." : t.memo;
+                    
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 text-slate-400">${t.date}</td>
+                        <td class="px-4 py-3 text-white font-semibold">${t.member}様</td>
+                        <td class="px-4 py-3 text-slate-300">${t.start} 〜 ${t.end} (${t.breakMin}分休)</td>
+                        <td class="px-4 py-3 text-amber-400 font-bold">${t.hours}h</td>
+                        <td class="px-4 py-3">
+                            <span class="text-[10px] bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-medium">${t.category}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 cursor-pointer hover:text-amber-400 font-medium" onclick="toggleMemoDisplay(this)" title="クリックで全文を表示します">
+                            <span class="memo-short">${shortMemo}</span>
+                            <span class="memo-full hidden whitespace-pre-wrap">${t.memo}</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="deleteTimeRecord('${t.id}')" class="text-rose-500 hover:bg-rose-500/10 px-2 py-1 rounded">削除</button>
+                        </td>
+                    `;
+                    timecardTbody.appendChild(tr);
+                });
+            }
+
+            // --- 4. 車両運行簿側の集計 & 描画 ---
+            let totalCarKm = 0, businessCarKm = 0;
+            state.vehicleLogs.forEach(v => {
+                totalCarKm += v.distance;
+                if (v.purposeType === "business") {
+                    businessCarKm += v.distance;
+                }
+            });
+            const businessRatio = totalCarKm > 0 ? Math.round((businessCarKm / totalCarKm) * 100) : 0;
+
+            document.getElementById('stat-car-total-km').textContent = `${totalCarKm} km`;
+            document.getElementById('stat-car-business-km').textContent = `${businessCarKm} km`;
+            document.getElementById('stat-car-business-ratio').textContent = `${businessRatio}%`;
+
+            const vehicleTbody = document.getElementById('vehicle-rows');
+            const vehicleEmpty = document.getElementById('empty-vehicle-state');
+            vehicleTbody.innerHTML = '';
+            if (state.vehicleLogs.length === 0) {
+                vehicleEmpty.classList.remove('hidden');
+            } else {
+                vehicleEmpty.classList.add('hidden');
+                state.vehicleLogs.forEach(v => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition text-xs";
+                    const pBadge = v.purposeType === "business" ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[10px] font-bold">事業用</span>` : `<span class="bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded text-[10px]">私用</span>`;
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 text-slate-400">${v.date}</td>
+                        <td class="px-4 py-3 text-white font-medium">${v.driver}</td>
+                        <td class="px-4 py-3">${pBadge}</td>
+                        <td class="px-4 py-3 text-slate-400 text-[10px]">${v.startOdo} → ${v.endOdo}</td>
+                        <td class="px-4 py-3 ${v.purposeType === 'business' ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${v.distance} km</td>
+                        <td class="px-4 py-3 text-slate-300">${v.destination}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="deleteVehicleLog('${v.id}')" class="text-rose-500 hover:bg-rose-500/10 px-2 py-1 rounded">削除</button>
+                        </td>
+                    `;
+                    vehicleTbody.appendChild(tr);
+                });
+            }
+
+            renderChart();
+        }
+
+        // 月次バーチャート描画
+        function renderChart() {
+            const monthsData = {};
+            for (let m = 5; m <= 12; m++) {
+                monthsData[m] = { income: 0, expense: 0 };
+            }
+
+            state.transactions.forEach(t => {
+                const dateObj = new Date(t.date);
+                const m = dateObj.getMonth() + 1;
+                if (m >= 5 && m <= 12) {
+                    if (t.type === "income" && t.categoryId !== "capital_in") {
+                        monthsData[m].income += t.amount;
+                    } else if (t.type === "expense" || t.type === "unpaid-accrual") {
+                        monthsData[m].expense += t.amount;
+                    }
+                }
+            });
+
+            let maxVal = 100000;
+            for (let m in monthsData) {
+                maxVal = Math.max(maxVal, monthsData[m].income, monthsData[m].expense);
+            }
+
+            const container = document.getElementById('monthly-bars-container');
+            container.innerHTML = '';
+
+            for (let m = 5; m <= 12; m++) {
+                const inc = monthsData[m].income;
+                const exp = monthsData[m].expense;
+
+                const incPct = (inc / maxVal) * 100;
+                const expPct = (exp / maxVal) * 100;
+
+                const row = document.createElement('div');
+                row.className = "flex items-center gap-4 text-xs";
+                row.innerHTML = `
+                    <div class="w-8 font-bold text-slate-400 text-right">${m}月</div>
+                    <div class="flex-1 space-y-1">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full transition-all duration-500" style="width: ${incPct}%"></div>
+                            ${inc > 0 ? `<span class="text-[10px] text-emerald-400 font-semibold">¥${(inc / 10000).toFixed(1)}万</span>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="bg-gradient-to-r from-rose-500 to-amber-500 h-2 rounded-full transition-all duration-500" style="width: ${expPct}%"></div>
+                            ${exp > 0 ? `<span class="text-[10px] text-rose-300 font-semibold">¥${(exp / 10000).toFixed(1)}万</span>` : ''}
+                        </div>
                     </div>
+                `;
+                container.appendChild(row);
+            }
+        }
 
-                    <h2>💰 収支・仕訳明細一覧</h2>
-                    <table>
-                        <thead><tr><th>日付</th><th>区分</th><th>勘定科目・メモ</th><th>金額</th><th>画像</th></tr></thead>
-                        <tbody>${txRows || '<tr><td colspan="5" style="text-align:center; color:#64748b;">当月の収支データはありません。</td></tr>'}</tbody>
-                    </table>
+        // 状態保存
+        function saveState() {
+            localStorage.setItem('savvy_suite_state_v3', JSON.stringify(state));
+        }
 
-                    <h2>⏱️ 業務日誌・打ち合わせログ</h2>
-                    <table>
-                        <thead><tr><th>日付</th><th>氏名</th><th>時間</th><th>業務内容・打ち合わせ詳細</th></tr></thead>
-                        <tbody>${timeRows || '<tr><td colspan="4" style="text-align:center; color:#64748b;">当月の業務ログはありません。</td></tr>'}</tbody>
-                    </table>
-
-                    <h2>🚗 運行記録簿</h2>
-                    <table>
-                        <thead><tr><th>日付</th><th>区分</th><th>メーター距離</th><th>目的地・用途</th><th>画像</th></tr></thead>
-                        <tbody>${vehicleRows || '<tr><td colspan="5" style="text-align:center; color:#64748b;">当月の運行記録はありません。</td></tr>'}</tbody>
-                    </table>
-
-                    <div class="page-break"></div>
-                    ${imagesHtml}
-                </body>
-                </html>
+        // トースト通知システム
+        function showToast(msg, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `p-3.5 rounded-xl border text-xs font-bold shadow-2xl transition duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 ${
+                type === "success" 
+                ? "bg-slate-900 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10" 
+                : "bg-slate-900 text-rose-400 border-rose-500/20 shadow-rose-500/10"
+            }`;
+            toast.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                ${msg}
             `;
-            reportWindow.document.write(htmlContent);
-            reportWindow.document.close();
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
-        function saveState() { localStorage.setItem('savvy_suite_state_v3', JSON.stringify(state)); }
-        function loadDemoData(date) { 
+        // 初期デモデータの自動注入
+        function loadDemoData() {
             state.transactions = [
-                { id: "tx_demo1", date: date, type: "expense", categoryId: "exp_entertain", categoryName: "接待交際費 (飲食・贈答品等)", amount: 12500, memo: "ビジネス情報交換会食" }
+                { id: "tx_d1", date: "2026-05-02", type: "income", categoryId: "rev_video", categoryName: "売上：映像企画制作", amount: 450000, memo: "株式会社A様 企業PR動画企画構成報酬" },
+                { id: "tx_d2", date: "2026-05-10", type: "income", categoryId: "rev_const", categoryName: "売上：建設PM・コンサル", amount: 600000, memo: "札幌市内マンション新築PMプロジェクト第一期報酬" },
+                { id: "tx_d3", date: "2026-05-15", type: "expense", categoryId: "exp_supplies", categoryName: "消耗品費 (機材・ガジェット・ジム)", amount: 128000, memo: "撮影用ポータブルLED照明・ワイヤレスマイク機材" },
+                { id: "tx_d4", date: "2026-05-25", type: "unpaid-accrual", categoryId: "unpaid_accrued_salary", categoryName: "専従者給与（未払計上）", amount: 200000, memo: "ミキ様5月度専従者給与（未払計上による節税プール）" }
             ];
-            saveState(); 
+
+            state.timecard = [
+                { id: "tm_d1", date: "2026-05-01", member: "ミキ", start: "19:00", end: "22:00", breakMin: 0, hours: 3.0, category: "一般事務・経理", memo: "開業関連の領収書や帳簿の最終入力とファイリング実務" },
+                { id: "tm_d2", date: "2026-05-02", member: "ミキ", start: "19:30", end: "23:00", breakMin: 0, hours: 3.5, category: "映像企画制作アシスタント", memo: "PR動画プロジェクトの文字起こしやテロップ候補テキストの選定" },
+                { id: "tm_d3", date: "2026-05-08", member: "マサミ", start: "19:00", end: "23:00", breakMin: 0, hours: 4.0, category: "建設PM・コンサル補助", memo: "設計変更図面の確認および次回打合せ用アジェンダ・資料作成" }
+            ];
+
+            state.vehicleLogs = [
+                { id: "car_d1", date: "2026-05-01", driver: "マサミ", purposeType: "business", startOdo: 12000, endOdo: 12045, distance: 45, destination: "建設PMクライアント札幌打合せ会議" },
+                { id: "car_d2", date: "2026-05-02", driver: "ミキ", purposeType: "business", startOdo: 12045, endOdo: 12075, distance: 30, destination: "撮影用衣装およびオフィス消耗品買い出し(ニトリ・ヨドバシ)" },
+                { id: "car_d3", date: "2026-05-03", driver: "マサミ", purposeType: "private", startOdo: 12075, endOdo: 12100, distance: 25, destination: "週末プライベート外出(スーパー・モール)" }
+            ];
+
+            // 車両入力の初期状態メーターに合わせる
+            document.getElementById('car-start-odometer').value = 12100;
+            saveState();
         }
 
-        function showToast(msg, type="success") {
-            const c = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = `p-3 rounded-xl border text-xs font-bold shadow-xl transition transform translate-y-2 opacity-0 flex items-center gap-2 ${type==='success'?'bg-slate-900 text-emerald-400 border-emerald-500/20':'bg-slate-900 text-rose-400 border-rose-500/20'}`;
-            t.innerHTML = `✓ ${msg}`;
-            c.appendChild(t);
-            setTimeout(() => t.classList.remove('translate-y-2', 'opacity-0'), 10);
-            setTimeout(() => { t.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => t.remove(), 300); }, 2500);
-        }
-
+        // JSONエクスポート
         function exportAllData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-            const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "savvy_backup.json");
-            document.body.appendChild(dl); dl.click(); dl.remove();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "savvy_life_suite_backup_2026.json");
+            document.body.appendChild(dl);
+            dl.click();
+            dl.remove();
+            showToast("全データのエクスポートが完了しました。");
         }
-        function triggerImport() { document.getElementById('import-file').click(); }
+
+        // JSONインポート
+        function triggerImport() {
+            document.getElementById('import-file').click();
+        }
+
         function importAllData(e) {
             const file = e.target.files[0];
-            if(!file) return;
+            if (!file) return;
             const r = new FileReader();
             r.onload = function(evt) {
-                try { state = JSON.parse(evt.target.result); saveState(); renderAll(); showToast("インポートしました！"); } 
-                catch(err) { showToast("エラーが発生しました", "error"); }
+                try {
+                    const parsed = JSON.parse(evt.target.result);
+                    if (parsed.transactions && parsed.timecard && parsed.vehicleLogs) {
+                        state = parsed;
+                        saveState();
+                        renderAll();
+                        showToast("インポートに成功しました！");
+                    } else {
+                        showToast("データ構造が違います。", "error");
+                    }
+                } catch(err) {
+                    showToast("ファイルの解析に失敗しました。", "error");
+                }
             };
             r.readAsText(file);
         }
     </script>
 </body>
 </html>
-
 
 ```
