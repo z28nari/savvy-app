@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Savvy Life Suite v6 - 総合事業管理システム</title>
+    <title>Savvy Life Suite v7 - 総合事業管理システム</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font & Noto Sans JP -->
@@ -47,7 +47,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v6</span>
+                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v7</span>
                     </h1>
                     <p class="text-xs text-slate-400">個人事業 総合エビデンス（収支・出勤簿・運行記録）管理ツール</p>
                 </div>
@@ -232,6 +232,7 @@
                             <input type="text" id="form-memo" placeholder="動画編集、機材購入、ミキ様給料など" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm">
                         </div>
                         
+                        <!-- 編集時の更新／キャンセルの切り替えエリア -->
                         <div id="ledger-btn-group" class="space-y-2">
                             <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm">
                                 収支を保存する
@@ -260,7 +261,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-700 pb-4 mb-4">
                     <div>
                         <h2 class="text-base font-bold text-white">🗒️ 取引履歴・仕訳</h2>
-                        <p class="text-xs text-slate-400">最新の取引データが一覧表示されます（横にスワイプ可能）</p>
+                        <p class="text-xs text-slate-400">最新の日付データ順に常に自動並び替えされます（横にスワイプ可能）</p>
                     </div>
                     <div class="flex gap-2">
                         <select id="filter-ledger-month" onchange="renderAll()" class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300">
@@ -271,7 +272,7 @@
                     </div>
                 </div>
                 
-                <!-- 横スクロールコンテナ -->
+                <!-- スマホの縦潰れ対策：横スクロールコンテナ -->
                 <div class="overflow-x-auto w-full border border-slate-800 rounded-xl bg-slate-950/40">
                     <table class="w-full text-left text-sm text-slate-300 min-w-[950px] table-fixed">
                         <thead class="text-xs text-slate-400 uppercase bg-slate-900/80">
@@ -377,7 +378,7 @@
                     <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                         <div class="flex flex-col">
                             <h2 class="text-base font-bold text-white">🗓️ 勤務・業務実施日誌</h2>
-                            <p class="text-[10px] text-amber-400 mt-0.5">💡 詳細メモをタップすると、元の長い全文章が表示／非表示されます。</p>
+                            <p class="text-[10px] text-amber-400 mt-0.5">💡 どのような順序で入力しても、常に最新の日付順に上から自動整列されます。</p>
                         </div>
                         <div class="flex gap-2">
                             <select id="filter-time-member" onchange="renderAll()" class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-slate-300">
@@ -423,7 +424,7 @@
                 <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500">
                     <p class="text-xs text-slate-400 font-medium">今月の総走行距離</p>
                     <p id="stat-car-total-km" class="text-2xl font-bold mt-2 text-white">0 km</p>
-                    <div class="mt-2 text-xs text-slate-400">メーター記録の総距離</div>
+                    <div class="mt-2 text-xs text-slate-400">メーター記録 of 総距離</div>
                 </div>
                 <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500">
                     <p class="text-xs text-slate-400 font-medium">うち 事業目的の走行</p>
@@ -619,22 +620,24 @@
 
         // 初期ロード
         window.onload = function() {
-            // 初期登録日時の設定 (2026年5月1日)
             const defaultDate = "2026-05-01";
             setDateAll(defaultDate);
 
-            // ローカルストレージからのロード (古いキャッシュ干渉を防ぐためキーを新規新設)
-            const savedState = localStorage.getItem('savvy_suite_state_v6');
+            // ローカルストレージからのロード
+            const savedState = localStorage.getItem('savvy_suite_state_v7');
             if (savedState) {
                 state = JSON.parse(savedState);
             } else {
-                // v5、v4、v3、v1などの過去キーからのオートインポート
+                // 旧バージョン（v6, v5, v4, v3, v1）からの全財産引き継ぎ
+                const v6State = localStorage.getItem('savvy_suite_state_v6');
                 const v5State = localStorage.getItem('savvy_suite_state_v5');
                 const v4State = localStorage.getItem('savvy_suite_state_v4');
                 const v3State = localStorage.getItem('savvy_suite_state_v3');
                 const v2State = localStorage.getItem('savvy_suite_state_v1');
                 
-                if (v5State) {
+                if (v6State) {
+                    state = JSON.parse(v6State);
+                } else if (v5State) {
                     state = JSON.parse(v5State);
                 } else if (v4State) {
                     state = JSON.parse(v4State);
@@ -662,8 +665,7 @@
             document.getElementById('modal-payment-date').value = dateString;
         }
 
-        // 💡 24時間すべての時間を選択可能にする処理
-        // ただし初期セット（デフォルト）は19:00〜23:00とする
+        // 24時間分（30分刻み、計48段階）の時間帯プルダウン生成
         function buildTimeDropdowns() {
             const startSelect = document.getElementById('time-start');
             const endSelect = document.getElementById('time-end');
@@ -671,24 +673,19 @@
             startSelect.innerHTML = '';
             endSelect.innerHTML = '';
 
-            // 00:00 から 23:30 までの24時間分（30分刻み、計48段階）の選択肢を作成
             for (let hour = 0; hour < 24; hour++) {
                 for (let min of ['00', '30']) {
                     const timeStr = `${String(hour).padStart(2, '0')}:${min}`;
                     
-                    // 開始時間の選択肢追加
                     const optStart = document.createElement('option');
                     optStart.value = timeStr;
                     optStart.textContent = timeStr;
-                    // デフォルトは 19:00
                     if (timeStr === '19:00') optStart.selected = true; 
                     startSelect.appendChild(optStart);
 
-                    // 終了時間の選択肢追加
                     const optEnd = document.createElement('option');
                     optEnd.value = timeStr;
                     optEnd.textContent = timeStr;
-                    // デフォルトは 23:00
                     if (timeStr === '23:00') optEnd.selected = true; 
                     endSelect.appendChild(optEnd);
                 }
@@ -719,7 +716,7 @@
             });
         }
 
-        // カスタム確認ダイアログハンドラ
+        // カスタム確認ダイアログ
         function showCustomConfirm(msg, yesCallback) {
             document.getElementById('confirm-message').textContent = msg;
             currentConfirmAction = yesCallback;
@@ -878,7 +875,7 @@
             renderAll();
         }
 
-        // 収支編集の開始（フォームへ逆引きセット）
+        // 収支編集の開始
         function editTransaction(id) {
             const t = state.transactions.find(item => item.id === id);
             if (!t) return;
@@ -990,7 +987,7 @@
             saveState();
             renderAll();
             closePaymentModal();
-            showToast("未払給与の振込支給実績を記録しました！");
+            showToast("未払給与 of 振込支給実績を記録しました！");
         }
 
         function deleteTransaction(id) {
@@ -1073,7 +1070,6 @@
             const startSelect = document.getElementById('time-start');
             const endSelect = document.getElementById('time-end');
             
-            // 24時間すべての選択肢に適合させて選択
             if ([...startSelect.options].some(o => o.value === t.start)) {
                 startSelect.value = t.start;
             } else {
@@ -1111,13 +1107,13 @@
             document.getElementById('timecard-form-title').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 初期デフォルト（19:00〜23:00）にリセットする
+        // 初期デフォルトにリセットする
         function resetTimecardForm() {
             document.getElementById('form-time-id').value = "";
             document.getElementById('time-date').value = selectedDate;
             document.getElementById('time-member').value = "マサミ";
-            document.getElementById('time-start').value = "19:00"; // デフォルト
-            document.getElementById('time-end').value = "23:00";   // デフォルト
+            document.getElementById('time-start').value = "19:00"; 
+            document.getElementById('time-end').value = "23:00";   
             document.getElementById('time-break').value = "0";
             document.getElementById('time-category').value = "一般事務・経理";
             document.getElementById('time-memo').value = "";
@@ -1281,6 +1277,14 @@
                 filteredLedger = filteredLedger.filter(t => new Date(t.date).getMonth() + 1 === parseInt(filterLedgerMonth));
             }
 
+            // 💡 収支をカレンダー日付順（降順：新しい日付が上）に徹底ソート！
+            filteredLedger.sort((a, b) => {
+                if (a.date !== b.date) {
+                    return b.date.localeCompare(a.date); // 新しい日付が上
+                }
+                return b.id.localeCompare(a.id); // 日付が同じなら、入力されたのが新しい順
+            });
+
             let totalRev = 0, totalExp = 0, revCount = 0, expCount = 0;
             state.transactions.forEach(t => {
                 if (t.type === "income" && t.categoryId !== "capital_in") {
@@ -1351,6 +1355,17 @@
                 filteredTime = filteredTime.filter(t => t.member === filterTimeMember);
             }
 
+            // 💡 出勤簿をカレンダー日付順（降順：新しい日付が上）に徹底ソート！
+            filteredTime.sort((a, b) => {
+                if (a.date !== b.date) {
+                    return b.date.localeCompare(a.date); // 新しい日付が上
+                }
+                if (a.start !== b.start) {
+                    return b.start.localeCompare(a.start); // 日付が同じなら開始時間の遅いものが上
+                }
+                return b.id.localeCompare(a.id); // それでも同じなら登録時間順
+            });
+
             let mikiDays = 0, mikiHours = 0, masamiDays = 0;
             const seenDatesMiki = new Set();
             const seenDatesMasami = new Set();
@@ -1404,6 +1419,16 @@
             }
 
             // --- 4. 車両運行簿側の集計 & 描画 ---
+            let sortedVehicles = [...state.vehicleLogs];
+            
+            // 💡 車両運行記録をカレンダー日付順（降順：新しい日付が上）に徹底ソート！
+            sortedVehicles.sort((a, b) => {
+                if (a.date !== b.date) {
+                    return b.date.localeCompare(a.date); // 新しい日付が上
+                }
+                return b.id.localeCompare(a.id); // 日付が同じなら、新しく入力されたのが上
+            });
+
             let totalCarKm = 0, businessCarKm = 0;
             state.vehicleLogs.forEach(v => {
                 totalCarKm += v.distance;
@@ -1420,11 +1445,11 @@
             const vehicleTbody = document.getElementById('vehicle-rows');
             const vehicleEmpty = document.getElementById('empty-vehicle-state');
             vehicleTbody.innerHTML = '';
-            if (state.vehicleLogs.length === 0) {
+            if (sortedVehicles.length === 0) {
                 vehicleEmpty.classList.remove('hidden');
             } else {
                 vehicleEmpty.classList.add('hidden');
-                state.vehicleLogs.forEach(v => {
+                sortedVehicles.forEach(v => {
                     const tr = document.createElement('tr');
                     tr.className = "border-b border-slate-800 hover:bg-slate-800/40 transition text-xs";
                     
@@ -1438,7 +1463,7 @@
                     tr.innerHTML = `
                         <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${v.date}</td>
                         <td class="px-4 py-3 text-white font-medium whitespace-nowrap">${driverName}様</td>
-                        <td class="px-4 py-3">${pBadge}</td>
+                        <td class="px-4 py-3 whitespace-nowrap">${pBadge}</td>
                         <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${v.startOdo} km → ${v.endOdo} km</td>
                         <td class="px-4 py-3 whitespace-nowrap ${v.purposeType === 'business' ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${v.distance} km</td>
                         <td class="px-4 py-3 text-slate-300 leading-relaxed">${destinationValue}</td>
@@ -1510,7 +1535,7 @@
 
         // 状態保存
         function saveState() {
-            localStorage.setItem('savvy_suite_state_v6', JSON.stringify(state));
+            localStorage.setItem('savvy_suite_state_v7', JSON.stringify(state));
         }
 
         // トースト通知システム
