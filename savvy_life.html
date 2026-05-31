@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Savvy Life Suite v8 - 総合事業管理システム</title>
+    <title>Savvy Life Suite v9 - 総合事業管理システム</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font & Noto Sans JP -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&family=Noto+Sans+JP:wght=300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
@@ -51,7 +51,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v8</span>
+                        Savvy Life <span class="text-amber-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">Suite v9</span>
                     </h1>
                     <p class="text-xs text-slate-400">個人事業 総合エビデンス（収支・出勤簿・運行記録）管理ツール</p>
                 </div>
@@ -517,7 +517,7 @@
                     </div>
                     <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-200 rounded-lg">
                         🚗 **家事按分（車の経費化）の証明方法：**<br>
-                        税務署に対して「事業目的」と「個人目的」の走行距離の割合を正確に開示できれば、車両購入費（減価償却費）、自動車税、損害保険、充電代（電気代）、車検代の、この比率分の経費計上が法的に100%認められます。
+                        税務署に対して「事業目的」と「個人目的」の走行距離の割合を正確に開示できれば、車両購入費（減価償却費）、自動車税、損害保険、充電代（電気代）、車検代の, この比率分の経費計上が法的に100%認められます。
                     </div>
                 </div>
             </div>
@@ -614,7 +614,7 @@
             vehicleLogs: []
         };
 
-        // 現在選択中の日付 (カレンダー連動用。デフォルト5月31日にセット)
+        // 現在選択中の日付 (デフォルト5月31日)
         let selectedDate = "2026-05-31";
         // カレンダーで現在表示中の年月
         let calendarYear = 2026;
@@ -624,16 +624,16 @@
 
         // 初期ロード
         window.onload = function() {
-            // 本日である「2026-05-31」を標準としてセット
+            // 本日「2026-05-31」を標準としてセット
             const defaultDate = "2026-05-31";
             setDateAll(defaultDate);
 
-            // ローカルストレージからのロード
-            const savedState = localStorage.getItem('savvy_suite_state_v8');
+            // ローカルストレージからのロード (古いキャッシュ干渉を防ぐためキーを新規新設)
+            const savedState = localStorage.getItem('savvy_suite_state_v8_fixed');
             if (savedState) {
                 state = JSON.parse(savedState);
             } else {
-                // 旧バージョン（v7, v6, v5, v4, v3, v1）からの全資産自動インポート
+                // v7、v6、v5、v4などの過去全財産のオートインポート
                 const v7State = localStorage.getItem('savvy_suite_state_v7');
                 const v6State = localStorage.getItem('savvy_suite_state_v6');
                 const v5State = localStorage.getItem('savvy_suite_state_v5');
@@ -654,10 +654,10 @@
                 } else if (v2State) {
                     state = JSON.parse(v2State);
                 } else {
-                    loadDemoData(); // 初回起動用デモ
+                    loadDemoData(); 
                 }
                 
-                // 💡【重要・時差バグ補正プログラム】 JSTの時差ズレによって過去データが変な日にずれている場合、綺麗にマッピングし直す
+                // 💡【重要】：表記の混在（スラッシュ/ハイフン）をロード時に強制クレンジング
                 sanitizeExistingData();
                 saveState();
             }
@@ -667,35 +667,54 @@
             renderAll();
         };
 
-        // 過去データのタイムゾーンズレを自動補正（100%安全なデータマッピング）
+        // 過去データの不整合をJSTハイフン表記に自動変換・補正（バグ防止）
         function sanitizeExistingData() {
-            // 例：JSTのズレなどで "YYYY-MM-DD" フォーマットに異常や空文字がある場合は補正
-            state.timecard.forEach(t => {
-                if (t.member === "妻") t.member = "ミキ";
-                if (t.member === "代表") t.member = "マサミ";
-            });
-            state.vehicleLogs.forEach(v => {
-                if (v.driver === "代表") v.driver = "マサミ";
-                if (v.driver === "妻") v.driver = "ミキ";
-            });
+            if (state.transactions) {
+                state.transactions.forEach(t => {
+                    if (t.date) t.date = t.date.replace(/\//g, '-');
+                });
+            } else {
+                state.transactions = [];
+            }
+            
+            if (state.timecard) {
+                state.timecard.forEach(t => {
+                    if (t.date) t.date = t.date.replace(/\//g, '-');
+                    if (t.member === "妻") t.member = "ミキ";
+                    if (t.member === "代表") t.member = "マサミ";
+                });
+            } else {
+                state.timecard = [];
+            }
+
+            if (state.vehicleLogs) {
+                state.vehicleLogs.forEach(v => {
+                    if (v.date) v.date = v.date.replace(/\//g, '-');
+                    if (v.driver === "代表") v.driver = "マサミ";
+                    if (v.driver === "妻") v.driver = "ミキ";
+                });
+            } else {
+                state.vehicleLogs = [];
+            }
         }
 
-        // すべての日付入力欄を指定の日付に連動・設定（JST文字列で直接安全操作）
+        // すべての日付入力欄を指定の日付に連動・設定（ハイフン表記に統一）
         function setDateAll(dateString) {
-            selectedDate = dateString;
-            document.getElementById('form-date').value = dateString;
-            document.getElementById('time-date').value = dateString;
-            document.getElementById('car-date').value = dateString;
-            document.getElementById('modal-payment-date').value = dateString;
+            const sanitized = dateString.replace(/\//g, '-');
+            selectedDate = sanitized;
+            document.getElementById('form-date').value = sanitized;
+            document.getElementById('time-date').value = sanitized;
+            document.getElementById('car-date').value = sanitized;
+            document.getElementById('modal-payment-date').value = sanitized;
         }
 
-        // 入力フォームの日付欄が押された時、スマホネイティブを起動せずカスタムカレンダーへ誘導
+        // カレンダー選択エリアへの誘導（スクロール）
         function scrollToCalendar() {
-            showToast("上部のカレンダー（月曜始まり）から日付をタップして選択してください。");
+            showToast("上部カレンダーの日付をタップして選択してください。");
             document.getElementById('shared-calendar-section').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 24時間分（30分刻み）の時間帯プルダウン生成
+        // 24時間分（30分刻み、計48段階）の時間帯プルダウン生成
         function buildTimeDropdowns() {
             const startSelect = document.getElementById('time-start');
             const endSelect = document.getElementById('time-end');
@@ -796,7 +815,6 @@
             const firstDayDate = new Date(calendarYear, calendarMonth - 1, 1);
             let firstDayOfWeek = firstDayDate.getDay();
             
-            // 月曜始まりに並び替えるための変換 (月:0, 火:1, 水:2, 木:3, 金:4, 土:5, 日:6)
             let mondayStartOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
             const totalDays = new Date(calendarYear, calendarMonth, 0).getDate();
@@ -825,7 +843,7 @@
                     baseClass += "bg-slate-800/40 text-slate-300";
                 }
 
-                // 本日(2026年5月31日)の目印を完全に補正
+                // 2026年5月31日など、本日・選択日の目印を完全に補正
                 const isToday = (calendarYear === 2026 && calendarMonth === 5 && day === 31);
                 let borderClass = isToday ? " border-2 border-amber-500" : "";
 
@@ -839,21 +857,30 @@
                 const indicatorContainer = document.createElement('div');
                 indicatorContainer.className = "flex gap-0.5 justify-center mt-1 w-full h-1";
 
-                const hasMasami = state.timecard.some(t => t.date === dayString && (t.member === "マサミ" || t.member === "代表"));
+                const hasMasami = state.timecard.some(t => {
+                    const tDate = (t.date || "").replace(/\//g, '-');
+                    return tDate === dayString && (t.member === "マサミ" || t.member === "代表");
+                });
                 if (hasMasami) {
                     const dot = document.createElement('span');
                     dot.className = "w-1.5 h-1 rounded-full bg-emerald-400";
                     indicatorContainer.appendChild(dot);
                 }
 
-                const hasMiki = state.timecard.some(t => t.date === dayString && (t.member === "ミキ" || t.member === "妻"));
+                const hasMiki = state.timecard.some(t => {
+                    const tDate = (t.date || "").replace(/\//g, '-');
+                    return tDate === dayString && (t.member === "ミキ" || t.member === "妻");
+                });
                 if (hasMiki) {
                     const dot = document.createElement('span');
                     dot.className = "w-1.5 h-1 rounded-full bg-amber-400";
                     indicatorContainer.appendChild(dot);
                 }
 
-                const hasVehicle = state.vehicleLogs.some(v => v.date === dayString);
+                const hasVehicle = state.vehicleLogs.some(v => {
+                    const vDate = (v.date || "").replace(/\//g, '-');
+                    return vDate === dayString;
+                });
                 if (hasVehicle) {
                     const dot = document.createElement('span');
                     dot.className = "w-1.5 h-1 rounded-full bg-sky-400";
@@ -870,10 +897,10 @@
         function addTransaction(e) {
             e.preventDefault();
             const txId = document.getElementById('form-tx-id').value;
-            const date = document.getElementById('form-date').value;
+            const date = document.getElementById('form-date').value.replace(/\//g, '-'); // ハイフンに強制クレンジング
             const type = document.getElementById('form-type').value;
             const categoryId = document.getElementById('form-category').value;
-            const amount = parseInt(document.getElementById('form-amount').value);
+            const amount = parseInt(document.getElementById('form-amount').value, 10);
             const memo = document.getElementById('form-memo').value || "-";
 
             const categoryName = getCategoryName(type, categoryId);
@@ -915,7 +942,7 @@
             switchTab('ledger');
 
             document.getElementById('form-tx-id').value = t.id;
-            document.getElementById('form-date').value = t.date;
+            document.getElementById('form-date').value = t.date.replace(/\//g, '-');
             document.getElementById('form-type').value = t.type;
             
             updateCategories();
@@ -935,7 +962,7 @@
                     </button>
                 </div>
             `;
-            selectedDate = t.date;
+            selectedDate = t.date.replace(/\//g, '-');
             renderCalendar();
 
             document.getElementById('ledger-form-title').scrollIntoView({ behavior: 'smooth' });
@@ -979,8 +1006,8 @@
             let accruals = 0;
             let settlements = 0;
             state.transactions.forEach(t => {
-                if (t.type === "unpaid-accrual") accruals += t.amount;
-                if (t.type === "unpaid-settlement") settlements += t.amount;
+                if (t.type === "unpaid-accrual") accruals += (t.amount || 0);
+                if (t.type === "unpaid-settlement") settlements += (t.amount || 0);
             });
             return accruals - settlements;
         }
@@ -997,8 +1024,8 @@
         }
 
         function submitPaymentAccrual() {
-            const date = document.getElementById('modal-payment-date').value;
-            const amount = parseInt(document.getElementById('modal-payment-amount').value);
+            const date = document.getElementById('modal-payment-date').value.replace(/\//g, '-');
+            const amount = parseInt(document.getElementById('modal-payment-amount').value, 10);
             
             if (!amount || amount <= 0) {
                 showToast("正しい金額を入力してください。", "error");
@@ -1041,17 +1068,23 @@
         function addTimeRecord(e) {
             e.preventDefault();
             const timeId = document.getElementById('form-time-id').value;
-            const date = document.getElementById('time-date').value;
+            const date = document.getElementById('time-date').value.replace(/\//g, '-'); // ハイフン表記にクレンジング
             const member = document.getElementById('time-member').value;
             const start = document.getElementById('time-start').value;
             const end = document.getElementById('time-end').value;
-            const breakMin = parseInt(document.getElementById('time-break').value);
+            const breakMin = parseInt(document.getElementById('time-break').value, 10) || 0;
             const category = document.getElementById('time-category').value;
             const memo = document.getElementById('time-memo').value || "-";
 
             const startMinutes = timeToMinutes(start);
             const endMinutes = timeToMinutes(end);
-            let diffMinutes = endMinutes - startMinutes - breakMin;
+            
+            // 💡 夜をまたぐ稼働（例: 22:00〜01:00など）に対応した安全な時間差計算
+            let diffMinutes = endMinutes - startMinutes;
+            if (diffMinutes < 0) {
+                diffMinutes += 24 * 60; // 翌日にまたぐ場合は24時間を加算して補正
+            }
+            diffMinutes -= breakMin;
             if (diffMinutes < 0) diffMinutes = 0;
             const hours = (diffMinutes / 60).toFixed(1);
 
@@ -1094,7 +1127,7 @@
             switchTab('timecard');
 
             document.getElementById('form-time-id').value = t.id;
-            document.getElementById('time-date').value = t.date;
+            document.getElementById('time-date').value = t.date.replace(/\//g, '-');
             
             const mSelect = document.getElementById('time-member');
             mSelect.value = (t.member === "妻" ? "ミキ" : (t.member === "代表" ? "マサミ" : t.member));
@@ -1116,7 +1149,7 @@
                 endSelect.add(opt);
             }
 
-            document.getElementById('time-break').value = t.breakMin;
+            document.getElementById('time-break').value = t.breakMin || 0;
             document.getElementById('time-category').value = t.category || "一般事務・経理";
             document.getElementById('time-memo').value = t.memo || "";
 
@@ -1133,13 +1166,12 @@
                 </div>
             `;
 
-            selectedDate = t.date;
+            selectedDate = t.date.replace(/\//g, '-');
             renderCalendar();
 
             document.getElementById('timecard-form-title').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 初期デフォルトにリセットする
         function resetTimecardForm() {
             document.getElementById('form-time-id').value = "";
             document.getElementById('time-date').value = selectedDate;
@@ -1168,6 +1200,12 @@
             });
         }
 
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
         function toggleMemoDisplay(element) {
             const shortSpan = element.querySelector('.memo-short');
             const fullSpan = element.querySelector('.memo-full');
@@ -1188,11 +1226,11 @@
         function addVehicleLog(e) {
             e.preventDefault();
             const vehicleId = document.getElementById('form-vehicle-id').value;
-            const date = document.getElementById('car-date').value;
+            const date = document.getElementById('car-date').value.replace(/\//g, '-'); // ハイフン表記にクレンジング
             const driver = document.getElementById('car-driver').value;
             const purposeType = document.getElementById('car-purpose-type').value;
-            const startOdo = parseInt(document.getElementById('car-start-odometer').value);
-            const endOdo = parseInt(document.getElementById('car-end-odometer').value);
+            const startOdo = parseInt(document.getElementById('car-start-odometer').value, 10) || 0;
+            const endOdo = parseInt(document.getElementById('car-end-odometer').value, 10) || 0;
             const destination = document.getElementById('car-destination').value;
 
             const distance = endOdo - startOdo;
@@ -1239,7 +1277,7 @@
             switchTab('vehicle');
 
             document.getElementById('form-vehicle-id').value = v.id;
-            document.getElementById('car-date').value = v.date;
+            document.getElementById('car-date').value = v.date.replace(/\//g, '-');
             document.getElementById('car-driver').value = (v.driver === "代表" ? "マサミ" : (v.driver === "妻" ? "ミキ" : v.driver));
             document.getElementById('car-purpose-type').value = v.purposeType || "business";
             document.getElementById('car-start-odometer').value = v.startOdo;
@@ -1258,7 +1296,7 @@
                     </button>
                 </div>
             `;
-            selectedDate = v.date;
+            selectedDate = v.date.replace(/\//g, '-');
             renderCalendar();
 
             document.getElementById('vehicle-form-title').scrollIntoView({ behavior: 'smooth' });
@@ -1307,25 +1345,30 @@
             let filteredLedger = [...state.transactions];
             if (filterLedgerMonth !== "all") {
                 filteredLedger = filteredLedger.filter(t => {
-                    // 💡 【完璧・時差対策仕様】：ハイフン分割で安全に「月」を取得
-                    const m = parseInt(t.date.split('-')[1], 10);
-                    return m === parseInt(filterLedgerMonth);
+                    const cleanDate = t.date || "2026-05-31";
+                    const m = parseInt(cleanDate.split('-')[1], 10);
+                    return m === parseInt(filterLedgerMonth, 10);
                 });
             }
 
-            // 収支をカレンダー日付順にソート（安全な文字列ソート）
+            // 💡 収支をカレンダー日付順にソート（例外クラッシュを100%防ぐ安全ガード付き）
             filteredLedger.sort((a, b) => {
-                if (a.date !== b.date) return b.date.localeCompare(a.date);
-                return b.id.localeCompare(a.id);
+                const dateA = a.date || "";
+                const dateB = b.date || "";
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
+                const idA = a.id || "";
+                const idB = b.id || "";
+                return idB.localeCompare(idA);
             });
 
             let totalRev = 0, totalExp = 0, revCount = 0, expCount = 0;
             state.transactions.forEach(t => {
+                const amt = t.amount || 0;
                 if (t.type === "income" && t.categoryId !== "capital_in") {
-                    totalRev += t.amount;
+                    totalRev += amt;
                     revCount++;
                 } else if (t.type === "expense" || t.type === "unpaid-accrual") {
-                    totalExp += t.amount;
+                    totalExp += amt;
                     expCount++;
                 }
             });
@@ -1365,12 +1408,14 @@
 
                     const memoValue = t.memo || "-";
                     const categoryValue = t.categoryName || "その他";
+                    const cleanDate = t.date || "-";
+                    const cleanAmt = t.amount || 0;
 
                     tr.innerHTML = `
-                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap font-medium">${t.date}</td>
+                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap font-medium">${cleanDate}</td>
                         <td class="px-4 py-3 whitespace-nowrap">${badge}</td>
                         <td class="px-4 py-3 text-white font-semibold leading-relaxed">${categoryValue}</td>
-                        <td class="px-4 py-3 whitespace-nowrap ${t.type === 'income' ? 'text-emerald-400 font-bold' : 'text-slate-300'}">¥${t.amount.toLocaleString()}</td>
+                        <td class="px-4 py-3 whitespace-nowrap ${t.type === 'income' ? 'text-emerald-400 font-bold' : 'text-slate-300'}">¥${cleanAmt.toLocaleString()}</td>
                         <td class="px-4 py-3 text-slate-400 leading-relaxed">${memoValue}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap space-x-1">
                             <button onclick="editTransaction('${t.id}')" class="text-sky-400 hover:bg-sky-500/10 px-2 py-1 rounded font-semibold transition">修正</button>
@@ -1389,11 +1434,19 @@
                 filteredTime = filteredTime.filter(t => t.member === filterTimeMember);
             }
 
-            // 出勤簿をカレンダー日付順にソート（安全な文字列ソート）
+            // 💡 出勤簿をカレンダー日付順にソート（例外クラッシュを100%防ぐ安全ガード付き）
             filteredTime.sort((a, b) => {
-                if (a.date !== b.date) return b.date.localeCompare(a.date);
-                if (a.start !== b.start) return b.start.localeCompare(a.start);
-                return b.id.localeCompare(a.id);
+                const dateA = a.date || "";
+                const dateB = b.date || "";
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
+                
+                const startA = a.start || "";
+                const startB = b.start || "";
+                if (startA !== startB) return startB.localeCompare(startA);
+                
+                const idA = a.id || "";
+                const idB = b.id || "";
+                return idB.localeCompare(idA);
             });
 
             let mikiDays = 0, mikiHours = 0, masamiDays = 0;
@@ -1401,11 +1454,13 @@
             const seenDatesMasami = new Set();
 
             state.timecard.forEach(t => {
+                const cleanDate = t.date || "";
+                const hrs = t.hours || 0;
                 if (t.member === "ミキ" || t.member === "妻") {
-                    seenDatesMiki.add(t.date);
-                    mikiHours += t.hours;
+                    if (cleanDate) seenDatesMiki.add(cleanDate);
+                    mikiHours += hrs;
                 } else if (t.member === "マサミ" || t.member === "代表") {
-                    seenDatesMasami.add(t.date);
+                    if (cleanDate) seenDatesMasami.add(cleanDate);
                 }
             });
             document.getElementById('stat-miki-days').textContent = `${seenDatesMiki.size} 日`;
@@ -1427,12 +1482,17 @@
                     const shortMemo = rawMemo.length > 5 ? rawMemo.slice(0, 5) + "..." : rawMemo;
                     const categoryLabel = t.category || "一般事務・経理";
                     const memberName = t.member === "マサミ" ? "マサミ" : (t.member === "ミキ" ? "ミキ" : t.member);
+                    const cleanDate = t.date || "-";
+                    const cleanStart = t.start || "19:00";
+                    const cleanEnd = t.end || "23:00";
+                    const cleanBreak = t.breakMin !== undefined ? t.breakMin : 0;
+                    const cleanHrs = t.hours !== undefined ? t.hours : 0;
 
                     tr.innerHTML = `
-                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${t.date}</td>
+                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${cleanDate}</td>
                         <td class="px-4 py-3 text-white font-semibold whitespace-nowrap">${memberName}様</td>
-                        <td class="px-4 py-3 text-slate-300 whitespace-nowrap">${t.start} 〜 ${t.end} (${t.breakMin}分休)</td>
-                        <td class="px-4 py-3 text-amber-400 font-bold whitespace-nowrap">${t.hours}h</td>
+                        <td class="px-4 py-3 text-slate-300 whitespace-nowrap">${cleanStart} 〜 ${cleanEnd} (${cleanBreak}分休)</td>
+                        <td class="px-4 py-3 text-amber-400 font-bold whitespace-nowrap">${cleanHrs}h</td>
                         <td class="px-4 py-3 text-slate-300 font-medium leading-relaxed">${categoryLabel}</td>
                         <td class="px-4 py-3 text-slate-300 cursor-pointer hover:text-amber-400 font-medium leading-relaxed" onclick="toggleMemoDisplay(this)" title="クリックで全文を表示します">
                             <span class="memo-short">${shortMemo}</span>
@@ -1451,17 +1511,22 @@
             // --- 4. 車両運行簿側の集計 & 描画 ---
             let sortedVehicles = [...state.vehicleLogs];
             
-            // 車両運行記録をカレンダー日付順にソート（安全な文字列ソート）
+            // 車両運行記録をカレンダー日付順にソート（例外クラッシュを100%防ぐ安全ガード付き）
             sortedVehicles.sort((a, b) => {
-                if (a.date !== b.date) return b.date.localeCompare(a.date);
-                return b.id.localeCompare(a.id);
+                const dateA = a.date || "";
+                const dateB = b.date || "";
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
+                const idA = a.id || "";
+                const idB = b.id || "";
+                return idB.localeCompare(idA);
             });
 
             let totalCarKm = 0, businessCarKm = 0;
             state.vehicleLogs.forEach(v => {
-                totalCarKm += v.distance;
+                const dist = v.distance || 0;
+                totalCarKm += dist;
                 if (v.purposeType === "business") {
-                    businessCarKm += v.distance;
+                    businessCarKm += dist;
                 }
             });
             const businessRatio = totalCarKm > 0 ? Math.round((businessCarKm / totalCarKm) * 100) : 0;
@@ -1487,13 +1552,17 @@
                     
                     const driverName = v.driver === "マサミ" ? "マサミ" : (v.driver === "ミキ" ? "ミキ" : v.driver);
                     const destinationValue = v.destination || "-";
+                    const cleanDate = v.date || "-";
+                    const cleanStartOdo = v.startOdo !== undefined ? v.startOdo : 0;
+                    const cleanEndOdo = v.endOdo !== undefined ? v.endOdo : 0;
+                    const cleanDist = v.distance !== undefined ? v.distance : 0;
 
                     tr.innerHTML = `
-                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${v.date}</td>
+                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${cleanDate}</td>
                         <td class="px-4 py-3 text-white font-medium whitespace-nowrap">${driverName}様</td>
                         <td class="px-4 py-3 whitespace-nowrap">${pBadge}</td>
-                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${v.startOdo} km → ${v.endOdo} km</td>
-                        <td class="px-4 py-3 whitespace-nowrap ${v.purposeType === 'business' ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${v.distance} km</td>
+                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${cleanStartOdo} km → ${cleanEndOdo} km</td>
+                        <td class="px-4 py-3 whitespace-nowrap ${v.purposeType === 'business' ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${cleanDist} km</td>
                         <td class="px-4 py-3 text-slate-300 leading-relaxed">${destinationValue}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap space-x-1">
                             <button onclick="editVehicleLog('${v.id}')" class="text-sky-400 hover:bg-sky-500/10 px-2 py-1 rounded font-semibold transition">修正</button>
@@ -1508,7 +1577,7 @@
             renderChart();
         }
 
-        // 月次バーチャート描画（安全な文字列スプリットでJST時差バグを完全駆除）
+        // 月次バーチャート描画（安全な文字列分割で時差ズレを完全解消）
         function renderChart() {
             const monthsData = {};
             for (let m = 5; m <= 12; m++) {
@@ -1516,13 +1585,14 @@
             }
 
             state.transactions.forEach(t => {
-                // 💡 【バグ解決・時差の永久排除】：JSTとUTCを混同する new Date() は一切使わない！
-                const m = parseInt(t.date.split('-')[1], 10);
+                const cleanDate = t.date || "2026-05-31";
+                const m = parseInt(cleanDate.split('-')[1], 10);
+                const amt = t.amount || 0;
                 if (m >= 5 && m <= 12) {
                     if (t.type === "income" && t.categoryId !== "capital_in") {
-                        monthsData[m].income += t.amount;
+                        monthsData[m].income += amt;
                     } else if (t.type === "expense" || t.type === "unpaid-accrual") {
-                        monthsData[m].expense += t.amount;
+                        monthsData[m].expense += amt;
                     }
                 }
             });
@@ -1563,7 +1633,7 @@
 
         // 状態保存
         function saveState() {
-            localStorage.setItem('savvy_suite_state_v8', JSON.stringify(state));
+            localStorage.setItem('savvy_suite_state_v8_fixed', JSON.stringify(state));
         }
 
         // トースト通知システム
@@ -1587,7 +1657,7 @@
             }, 3000);
         }
 
-        // 初期デモデータ
+        // デモデータ
         function loadDemoData() {
             state.transactions = [
                 { id: "tx_d1", date: "2026-05-02", type: "income", categoryId: "rev_video", categoryName: "売上：映像企画制作", amount: 450000, memo: "株式会社A様 企業PR動画企画構成報酬" },
